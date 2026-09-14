@@ -74,6 +74,7 @@ const LETTERS = [
     grapheme: 'A',
     category: 'base',
     letterName: 'a',
+    letterNameTts: 'A',
     ipa: '/a/',
     soundLabel: { en: 'open a', zh: '開口a' },
     articulation: {
@@ -98,6 +99,7 @@ const LETTERS = [
     grapheme: 'Z',
     category: 'base',
     letterName: 'zède',
+    letterNameTts: 'Z',
     ipa: '/z/',
     soundLabel: { en: 'buzzing z', zh: '嗡嗡的z音' },
     articulation: {
@@ -122,6 +124,7 @@ const LETTERS = [
     grapheme: 'E',
     category: 'base',
     letterName: 'e',
+    letterNameTts: 'E',
     ipa: '/ə/',
     soundLabel: { en: 'schwa e', zh: '輕聲的e（央元音）' },
     articulation: {
@@ -146,6 +149,7 @@ const LETTERS = [
     grapheme: 'R',
     category: 'base',
     letterName: 'erre',
+    letterNameTts: 'R',
     ipa: '/ʁ/',
     soundLabel: { en: 'throaty French r', zh: '喉音r' },
     articulation: {
@@ -170,6 +174,7 @@ const LETTERS = [
     grapheme: 'T',
     category: 'base',
     letterName: 'té',
+    letterNameTts: 'T',
     ipa: '/t/',
     soundLabel: { en: 'crisp, unaspirated t', zh: '不送氣的t' },
     articulation: {
@@ -194,6 +199,7 @@ const LETTERS = [
     grapheme: 'Y',
     category: 'base',
     letterName: 'i grec',
+    letterNameTts: 'Y',
     ipa: '/i/ (vowel) or /j/ (semivowel)',
     soundLabel: { en: 'i-like y', zh: '像i的y' },
     articulation: {
@@ -218,6 +224,7 @@ const LETTERS = [
     grapheme: 'U',
     category: 'base',
     letterName: 'u',
+    letterNameTts: 'U',
     ipa: '/y/',
     soundLabel: { en: 'rounded u', zh: '圓唇u' },
     articulation: {
@@ -242,6 +249,7 @@ const LETTERS = [
     grapheme: 'I',
     category: 'base',
     letterName: 'i',
+    letterNameTts: 'I',
     ipa: '/i/',
     soundLabel: { en: 'bright i', zh: '清亮的i' },
     articulation: {
@@ -266,6 +274,7 @@ const LETTERS = [
     grapheme: 'O',
     category: 'base',
     letterName: 'o',
+    letterNameTts: 'O',
     ipa: '/o/',
     soundLabel: { en: 'closed o', zh: '閉口o' },
     articulation: {
@@ -290,6 +299,7 @@ const LETTERS = [
     grapheme: 'P',
     category: 'base',
     letterName: 'pé',
+    letterNameTts: 'P',
     ipa: '/p/',
     soundLabel: { en: 'soft p', zh: '輕聲p' },
     articulation: {
@@ -315,6 +325,7 @@ const LETTERS = [
     grapheme: 'Q',
     category: 'base',
     letterName: 'ku',
+    letterNameTts: 'Q',
     ipa: '/k/',
     soundLabel: { en: 'hard k (qu = k)', zh: '硬音k（qu唸k）' },
     articulation: {
@@ -339,6 +350,7 @@ const LETTERS = [
     grapheme: 'S',
     category: 'base',
     letterName: 'esse',
+    letterNameTts: 'S',
     ipa: '/s/',
     soundLabel: { en: 'hissing s', zh: '氣音s' },
     articulation: {
@@ -363,6 +375,7 @@ const LETTERS = [
     grapheme: 'D',
     category: 'base',
     letterName: 'dé',
+    letterNameTts: 'D',
     ipa: '/d/',
     soundLabel: { en: 'voiced d', zh: '濁音d' },
     articulation: {
@@ -387,6 +400,7 @@ const LETTERS = [
     grapheme: 'F',
     category: 'base',
     letterName: 'effe',
+    letterNameTts: 'F',
     ipa: '/f/',
     soundLabel: { en: 'light f', zh: '唇齒音f' },
     articulation: {
@@ -411,6 +425,7 @@ const LETTERS = [
     grapheme: 'G',
     category: 'base',
     letterName: 'gé',
+    letterNameTts: 'G',
     ipa: '/g/ before a, o, u; /ʒ/ before e, i, y',
     soundLabel: { en: 'hard or soft g', zh: '硬音或軟音g' },
     articulation: {
@@ -435,6 +450,7 @@ const LETTERS = [
     grapheme: 'H',
     category: 'base',
     letterName: 'ache',
+    letterNameTts: 'H',
     ipa: 'silent — no sound',
     soundLabel: { en: 'silent h', zh: '不發音的h' },
     articulation: {
@@ -459,6 +475,7 @@ const LETTERS = [
     grapheme: 'J',
     category: 'base',
     letterName: 'ji',
+    letterNameTts: 'J',
     ipa: '/ʒ/',
     soundLabel: { en: 'buzzy j', zh: '濁擦音j' },
     articulation: {
@@ -483,6 +500,7 @@ const LETTERS = [
     grapheme: 'K',
     category: 'base',
     letterName: 'ka',
+    letterNameTts: 'K',
     ipa: '/k/',
     soundLabel: { en: 'unaspirated k', zh: '不送氣的k' },
     articulation: {
@@ -507,6 +525,7 @@ const LETTERS = [
     grapheme: 'L',
     category: 'base',
     letterName: 'elle',
+    letterNameTts: 'L',
     ipa: '/l/',
     soundLabel: { en: 'clear l', zh: '清晰的邊音l' },
     articulation: {
@@ -531,6 +550,7 @@ const LETTERS = [
     grapheme: 'M',
     category: 'base',
     letterName: 'emme',
+    letterNameTts: 'M',
     ipa: '/m/',
     soundLabel: { en: 'humming m', zh: '雙唇鼻音m' },
     articulation: {
@@ -555,6 +575,7 @@ const LETTERS = [
     grapheme: 'Ù',
     category: 'azerty-accent',
     letterName: 'u accent grave',
+    letterNameTts: 'u accent grave',
     ipa: '/u/',
     soundLabel: { en: 'closed u (like "ou")', zh: '合口u（跟ou相同）' },
     articulation: {
@@ -579,6 +600,7 @@ const LETTERS = [
     grapheme: 'W',
     category: 'base',
     letterName: 'double vé',
+    letterNameTts: 'W',
     ipa: '/w/ or /v/ (in loanwords)',
     soundLabel: { en: 'rare double-v', zh: '罕見的雙v（w）' },
     articulation: {
@@ -603,6 +625,7 @@ const LETTERS = [
     grapheme: 'X',
     category: 'base',
     letterName: 'iks',
+    letterNameTts: 'X',
     ipa: '/ks/, /gz/, /s/, or /z/ depending on the word',
     soundLabel: { en: 'shifting x', zh: '多變的x' },
     articulation: {
@@ -627,6 +650,7 @@ const LETTERS = [
     grapheme: 'C',
     category: 'base',
     letterName: 'cé',
+    letterNameTts: 'C',
     ipa: '/k/ before a, o, u; /s/ before e, i, y',
     soundLabel: { en: 'hard or soft c', zh: '硬音或軟音c' },
     articulation: {
@@ -651,6 +675,7 @@ const LETTERS = [
     grapheme: 'V',
     category: 'base',
     letterName: 'vé',
+    letterNameTts: 'V',
     ipa: '/v/',
     soundLabel: { en: 'buzzy v', zh: '濁音v' },
     articulation: {
@@ -675,6 +700,7 @@ const LETTERS = [
     grapheme: 'B',
     category: 'base',
     letterName: 'bé',
+    letterNameTts: 'B',
     ipa: '/b/',
     soundLabel: { en: 'voiced b', zh: '濁音b' },
     articulation: {
@@ -699,6 +725,7 @@ const LETTERS = [
     grapheme: 'N',
     category: 'base',
     letterName: 'enne',
+    letterNameTts: 'N',
     ipa: '/n/',
     soundLabel: { en: 'alveolar n', zh: '齒齦鼻音n' },
     articulation: {
@@ -724,6 +751,7 @@ const LETTERS = [
     grapheme: 'É',
     category: 'azerty-accent',
     letterName: 'e accent aigu',
+    letterNameTts: 'e accent aigu',
     ipa: '/e/',
     soundLabel: { en: 'closed é', zh: '閉口é' },
     articulation: {
@@ -747,6 +775,7 @@ const LETTERS = [
     grapheme: 'È',
     category: 'azerty-accent',
     letterName: 'e accent grave',
+    letterNameTts: 'e accent grave',
     ipa: '/ɛ/',
     soundLabel: { en: 'open è', zh: '開口è' },
     articulation: {
@@ -770,6 +799,7 @@ const LETTERS = [
     grapheme: 'Ç',
     category: 'azerty-accent',
     letterName: 'c cédille',
+    letterNameTts: 'c cédille',
     ipa: '/s/',
     soundLabel: { en: 'forced soft c', zh: '強制唸s的ç' },
     articulation: {
@@ -793,6 +823,7 @@ const LETTERS = [
     grapheme: 'À',
     category: 'azerty-accent',
     letterName: 'a accent grave',
+    letterNameTts: 'a accent grave',
     ipa: '/a/',
     soundLabel: { en: 'open à (same as a)', zh: '開口à（跟a相同）' },
     articulation: {
@@ -817,6 +848,7 @@ const LETTERS = [
     grapheme: 'Â',
     category: 'extra-accent',
     letterName: 'a accent circonflexe',
+    letterNameTts: 'a accent circonflexe',
     ipa: '/ɑ/ (traditional) or /a/ (modern, most common)',
     soundLabel: { en: 'darker â', zh: '較沉的â' },
     articulation: {
@@ -840,6 +872,7 @@ const LETTERS = [
     grapheme: 'Ê',
     category: 'extra-accent',
     letterName: 'e accent circonflexe',
+    letterNameTts: 'e accent circonflexe',
     ipa: '/ɛ/',
     soundLabel: { en: 'open ê (same as è)', zh: '開口ê（跟è相同）' },
     articulation: {
@@ -863,6 +896,7 @@ const LETTERS = [
     grapheme: 'Î',
     category: 'extra-accent',
     letterName: 'i accent circonflexe',
+    letterNameTts: 'i accent circonflexe',
     ipa: '/i/',
     soundLabel: { en: 'plain î (same as i)', zh: '與i相同的î' },
     articulation: {
@@ -886,6 +920,7 @@ const LETTERS = [
     grapheme: 'Ô',
     category: 'extra-accent',
     letterName: 'o accent circonflexe',
+    letterNameTts: 'o accent circonflexe',
     ipa: '/o/',
     soundLabel: { en: 'closed ô', zh: '閉口ô' },
     articulation: {
@@ -909,6 +944,7 @@ const LETTERS = [
     grapheme: 'Û',
     category: 'extra-accent',
     letterName: 'u accent circonflexe',
+    letterNameTts: 'u accent circonflexe',
     ipa: '/y/',
     soundLabel: { en: 'plain û (same as u)', zh: '與u相同的û' },
     articulation: {
@@ -932,6 +968,7 @@ const LETTERS = [
     grapheme: 'Ï',
     category: 'extra-accent',
     letterName: 'i tréma',
+    letterNameTts: 'i tréma',
     ipa: '/i/',
     soundLabel: { en: 'separated ï', zh: '分開發音的ï' },
     articulation: {
@@ -955,6 +992,7 @@ const LETTERS = [
     grapheme: 'Ë',
     category: 'extra-accent',
     letterName: 'e tréma',
+    letterNameTts: 'e tréma',
     ipa: '/ɛ/',
     soundLabel: { en: 'separated ë', zh: '分開發音的ë' },
     articulation: {

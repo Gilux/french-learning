@@ -34,7 +34,7 @@
     container.innerHTML = `
       <div class="panel">
         <h2>${letterUnit.grapheme} <span class="ipa">${letterUnit.ipa}</span></h2>
-        <p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterName)}</p>
+        <p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterNameTts)}</p>
         <p class="sound-label">${bilingual(letterUnit.soundLabel)}</p>
         <ul class="articulation">
           <li><strong>Tongue / 舌位:</strong> ${bilingual(letterUnit.articulation.tongue)}</li>
