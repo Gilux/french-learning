@@ -33,6 +33,8 @@
   <script src="js/layout.js"></script>
   <script src="data/letters.js"></script>
   <script src="js/keyboard.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/panel.js"></script>
   <script>
     document.getElementById('app-title').innerHTML = I18n.renderBilingual(
       { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
@@ -41,9 +43,20 @@
     document.getElementById('tab-game').innerHTML = I18n.renderBilingual({ en: 'Game', zh: '遊戲' });
 
     const keyboardContainer = document.getElementById('keyboard-container');
+    const panelContainer = document.getElementById('panel-container');
     Keyboard.render(keyboardContainer, window.LETTERS_DATA);
+
+    function findLetter(id) {
+      return window.LETTERS_DATA.find((l) => l.id === id);
+    }
+
+    let currentLetter = null;
     Keyboard.onKeyPress(keyboardContainer, (letterId) => {
-      console.log('key pressed:', letterId);
+      currentLetter = findLetter(letterId);
+      Panel.render(panelContainer, currentLetter);
+    });
+    Panel.onPlay(panelContainer, () => {
+      if (currentLetter) Tts.speak(currentLetter);
     });
   </script>
 </body>

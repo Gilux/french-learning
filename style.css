@@ -128,3 +128,41 @@ nav.tabs button.active {
     font-size: 1rem;
   }
 }
+
+.panel {
+  width: 100%;
+  background: var(--panel-bg);
+  border: 1px solid var(--key-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.panel .ipa {
+  color: var(--text-sub);
+  font-weight: normal;
+}
+
+.panel .articulation {
+  padding-left: 1.2rem;
+}
+
+.play-btn {
+  margin: 0.5rem 0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid var(--key-border);
+  background: var(--accent-key-bg);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.panel .sources {
+  font-size: 0.8rem;
+  padding-left: 1.2rem;
+}
+
+@media (min-width: 720px) {
+  .panel {
+    max-width: 360px;
+  }
+}
