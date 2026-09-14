@@ -52,14 +52,11 @@
       return window.LETTERS_DATA.find((l) => l.id === id);
     }
 
-    let currentLetter = null;
     Keyboard.onKeyPress(keyboardContainer, (letterId) => {
-      currentLetter = findLetter(letterId);
-      Panel.render(panelContainer, currentLetter);
+      const letter = findLetter(letterId);
+      Panel.render(panelContainer, letter);
     });
-    Panel.onPlay(panelContainer, () => {
-      if (currentLetter) Tts.speak(currentLetter);
-    });
+    Panel.onPlay(panelContainer, (text) => Tts.speakText(text));
 
     const tabKeyboardBtn = document.getElementById('tab-keyboard');
     const tabGameBtn = document.getElementById('tab-game');

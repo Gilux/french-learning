@@ -57,7 +57,7 @@
       `;
       const panelContainer = revealAreaEl.querySelector('.panel-container');
       Panel.render(panelContainer, currentLetter);
-      Panel.onPlay(panelContainer, () => Tts.speak(currentLetter));
+      Panel.onPlay(panelContainer, (text) => Tts.speakText(text));
 
       revealAreaEl.querySelector('.rating-buttons').addEventListener('click', (event) => {
         const btn = event.target.closest('[data-rating]');

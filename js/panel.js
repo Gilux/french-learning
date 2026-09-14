@@ -10,6 +10,10 @@
     return I18n.renderBilingual(text);
   }
 
+  function playBtn(text) {
+    return `<button type="button" class="play-btn-sm" data-speak="${text}" title="Play">🔊</button>`;
+  }
+
   function render(container, letterUnit) {
     if (!letterUnit) {
       container.innerHTML = '';
@@ -19,9 +23,18 @@
       ? `<p><strong>Zhuyin / 注音:</strong> ${letterUnit.zhuyin.symbol}</p>`
       : `<p><strong>Zhuyin / 注音:</strong> <em>No close equivalent / 沒有接近的音</em></p>`;
 
+    const examplesHtml = letterUnit.examples
+      .map((word) => `<li>${word} ${playBtn(word)}</li>`)
+      .join('');
+
+    const sentenceHtml = letterUnit.exampleSentence
+      ? `<p class="example-sentence">${letterUnit.exampleSentence} ${playBtn(letterUnit.exampleSentence)}</p>`
+      : '';
+
     container.innerHTML = `
       <div class="panel">
         <h2>${letterUnit.grapheme} <span class="ipa">${letterUnit.ipa}</span></h2>
+        <p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterName)}</p>
         <p class="sound-label">${bilingual(letterUnit.soundLabel)}</p>
         <ul class="articulation">
           <li><strong>Tongue / 舌位:</strong> ${bilingual(letterUnit.articulation.tongue)}</li>
@@ -30,8 +43,9 @@
         </ul>
         ${zhuyinLine}
         <p class="zhuyin-caveat">${bilingual(letterUnit.zhuyin.caveat)}</p>
-        <p><strong>Examples / 範例:</strong> ${letterUnit.examples.join(', ')}</p>
-        <button type="button" class="play-btn" data-action="play">🔊 Play / 播放</button>
+        <p><strong>Examples / 範例:</strong></p>
+        <ul class="examples">${examplesHtml}</ul>
+        ${sentenceHtml}
         <ul class="sources">
           ${letterUnit.sources.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.title}</a></li>`).join('')}
         </ul>
@@ -41,7 +55,8 @@
 
   function onPlay(container, callback) {
     container.addEventListener('click', (event) => {
-      if (event.target.closest('[data-action="play"]')) callback();
+      const btn = event.target.closest('[data-speak]');
+      if (btn) callback(btn.getAttribute('data-speak'));
     });
   }
 

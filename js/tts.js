@@ -19,16 +19,16 @@
     return voices[0];
   }
 
-  function speak(letterUnit) {
+  function speakText(text) {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     const voices = window.speechSynthesis.getVoices();
     const voice = pickVoice(voices);
-    const utterance = new SpeechSynthesisUtterance(letterUnit.ttsText);
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'fr-FR';
     if (voice) utterance.voice = voice;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
 
-  return { pickVoice, speak };
+  return { pickVoice, speakText };
 });
