@@ -1,0 +1,71 @@
+:root {
+  --key-bg: #f4f4f4;
+  --key-border: #cfcfcf;
+  --accent-key-bg: #eef3ff;
+  --extra-key-bg: #fff6ea;
+  --panel-bg: #ffffff;
+  --text-main: #1a1a1a;
+  --text-sub: #6b6b6b;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+  color: var(--text-main);
+  background: #fafafa;
+}
+
+.lang-zh {
+  display: block;
+  font-size: 0.8em;
+  color: var(--text-sub);
+}
+
+header h1 .lang-zh {
+  display: inline;
+  margin-left: 0.5rem;
+}
+
+nav.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+nav.tabs button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--key-border);
+  background: var(--key-bg);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+nav.tabs button.active {
+  background: var(--accent-key-bg);
+  font-weight: bold;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.layout {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .layout {
+    flex-direction: column;
+  }
+}

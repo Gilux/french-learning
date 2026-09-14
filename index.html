@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>French Letter Pronunciation Trainer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1 id="app-title"></h1>
+  </header>
+
+  <nav class="tabs">
+    <button id="tab-keyboard" class="active"></button>
+    <button id="tab-game"></button>
+  </nav>
+
+  <main>
+    <section id="view-keyboard" class="view active">
+      <div class="layout">
+        <div id="keyboard-container"></div>
+        <div id="panel-container"></div>
+      </div>
+    </section>
+
+    <section id="view-game" class="view">
+      <div id="game-container"></div>
+    </section>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script>
+    document.getElementById('app-title').innerHTML = I18n.renderBilingual(
+      { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
+    );
+    document.getElementById('tab-keyboard').innerHTML = I18n.renderBilingual({ en: 'Keyboard', zh: '鍵盤' });
+    document.getElementById('tab-game').innerHTML = I18n.renderBilingual({ en: 'Game', zh: '遊戲' });
+  </script>
+</body>
+</html>
