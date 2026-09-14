@@ -1249,3 +1249,309 @@ In a Chromium-based browser, check both a typical desktop width (e.g. 1280px) an
 git add style.css
 git commit -m "Final mobile responsive pass"
 ```
+
+---
+
+## Scope addition (approved by user after Task 10): letter-name audio + richer examples
+
+The user asked for two additions, with priority: (1) also let the user hear the letter's own NAME spoken aloud (not just an example word), and (2) more example words per letter, and a simple example sentence for some letters. Tasks 11-12 implement this on top of the completed Tasks 1-10, using the same data-then-UI sequencing as Tasks 6-9.
+
+### Task 11: Letter-name audio data + expanded examples/sentences
+
+**Files:**
+- Modify: `data/letters.js` (add `letterName` to every entry, expand `examples`, add `exampleSentence` to the 26 base letters)
+- Modify: `scripts/check-data.js` (validate the new `letterName` field)
+
+**Interfaces:**
+- Consumes: nothing new.
+- Produces: every letter unit gains `letterName: string` (the letter's own name as said aloud in French, e.g. `"ache"` for h) and `examples: string[]` with at least 2 items where natural. The 26 `base`-category entries also gain `exampleSentence: string` (a simple, grammatically correct A1-level French sentence using a word from that letter's own `examples`); accented letters may omit `exampleSentence` (skip it — do not force an unnatural sentence).
+
+- [ ] **Step 1: Add `letterName` to every one of the 38 entries**
+
+These are standard French alphabet/orthography names — not a phonetic claim needing a new citation, so no new research is required. Use exactly these values, matched by `id`:
+
+Base letters: `a`→"a", `b`→"bé", `c`→"cé", `d`→"dé", `e`→"e", `f`→"effe", `g`→"gé", `h`→"ache", `i`→"i", `j`→"ji", `k`→"ka", `l`→"elle", `m`→"emme", `n`→"enne", `o`→"o", `p`→"pé", `q`→"ku", `r`→"erre", `s`→"esse", `t`→"té", `u`→"u", `v`→"vé", `w`→"double vé", `x`→"iks", `y`→"i grec", `z`→"zède".
+
+Accented letters: `e-acute`→"e accent aigu", `e-grave`→"e accent grave", `c-cedilla`→"c cédille", `a-grave`→"a accent grave", `u-grave`→"u accent grave", `a-circumflex`→"a accent circonflexe", `e-circumflex`→"e accent circonflexe", `i-circumflex`→"i accent circonflexe", `o-circumflex`→"o accent circonflexe", `u-circumflex`→"u accent circonflexe", `i-diaeresis`→"i tréma", `e-diaeresis`→"e tréma".
+
+Add each as a new `letterName: '<value>'` field on the matching entry object (place it right after `grapheme`/`category`, before `ipa`, for readability — exact position doesn't matter functionally).
+
+- [ ] **Step 2: Expand `examples` to at least 2 words for every entry that currently has only 1**
+
+Pull a second (or third) genuinely French word that illustrates the same sound already documented in that entry's `soundLabel`/`articulation` text. This is ordinary vocabulary, not a new phonetic claim, so it does not need its own citation — the entry's existing `sources[]` already covers the sound itself. Keep words simple and common (A1/A2 level).
+
+- [ ] **Step 3: Add `exampleSentence` to the 26 `base`-category entries**
+
+Write one simple, natural, grammatically correct French sentence per base letter (3-7 words, present tense, common vocabulary — A1 level), ideally reusing one of that entry's own `examples` words so the sentence and the word list stay coherent. Do not add `exampleSentence` to the 12 accented entries (azerty-accent/extra-accent) — omit the field there entirely (leave it undefined), since forcing a sentence around an accented letter specifically is unnatural and out of scope.
+
+Example shape (illustrative only — write your own sentence for each of the 26 base letters, don't copy this one elsewhere):
+
+```js
+{
+  id: 'a',
+  grapheme: 'A',
+  category: 'base',
+  letterName: 'a',
+  ipa: '/a/',
+  soundLabel: { en: 'open a', zh: '開口a' },
+  articulation: { /* unchanged from Task 6 */ },
+  zhuyin: { /* unchanged from Task 6 */ },
+  examples: ['papa', 'chat', 'ami'],
+  exampleSentence: "Le chat est ami avec papa.",
+  ttsText: 'papa',
+  sources: [ /* unchanged from Task 6 */ ],
+}
+```
+
+- [ ] **Step 4: Update `scripts/check-data.js` to validate `letterName`**
+
+In the `REQUIRED_FIELDS` array, add `'letterName'`:
+
+```js
+const REQUIRED_FIELDS = ['id', 'grapheme', 'category', 'letterName', 'ipa', 'soundLabel', 'articulation', 'zhuyin', 'examples', 'ttsText', 'sources'];
+```
+
+No other change to that script is needed (`exampleSentence` stays optional/unchecked since only base letters carry it).
+
+- [ ] **Step 5: Run the check**
+
+Run: `node scripts/check-data.js`
+Expected: `OK: 38 letters, 0 errors` — fix any reported error and re-run until this passes. Also spot-check by eye that all 26 base entries have a non-empty `exampleSentence` and the 12 accented entries do not error despite lacking one (since `exampleSentence` isn't in `REQUIRED_FIELDS`).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add data/letters.js scripts/check-data.js
+git commit -m "Add letter-name audio data and richer examples"
+```
+
+---
+
+### Task 12: Per-item audio playback UI (letter name, each example word, example sentence)
+
+**Files:**
+- Modify: `js/tts.js` (replace the single-purpose `speak(letterUnit)` with a general `speakText(text)`)
+- Modify: `js/panel.js` (render a play button next to the letter name, each example word, and the example sentence, instead of one big Play button tied to `ttsText`)
+- Modify: `index.html` (update the `Panel.onPlay` wiring to speak whatever text the clicked button carries)
+- Modify: `js/game-ui.js` (same `Panel.onPlay` wiring update, inside `showAnswer()`)
+- Modify: `style.css` (small play-icon-button styling, remove the now-unused big `.play-btn` rule)
+
+**Interfaces:**
+- Consumes: `letterUnit.letterName`/`examples`/`exampleSentence` (Task 11).
+- Produces: `Tts.speakText(text)` — speaks any string via the browser's Web Speech API using the same voice-selection logic as before (`Tts.pickVoice` unchanged). `Tts.speak(letterUnit)` is removed — there are no other callers of it once this task updates index.html and game-ui.js. `Panel.onPlay(container, callback)` now calls `callback(text)` with the exact string from the clicked button's `data-speak` attribute, instead of taking no arguments.
+
+- [ ] **Step 1: Update `js/tts.js`**
+
+Replace the file's contents with:
+
+```js
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.Tts = factory();
+  }
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  function pickVoice(voices) {
+    if (!voices || voices.length === 0) return null;
+    const isFrench = (v) => v.lang && v.lang.toLowerCase().startsWith('fr');
+    const isGoogle = (v) => v.name && v.name.toLowerCase().includes('google');
+
+    const googleFrench = voices.find((v) => isFrench(v) && isGoogle(v));
+    if (googleFrench) return googleFrench;
+
+    const anyFrench = voices.find(isFrench);
+    if (anyFrench) return anyFrench;
+
+    return voices[0];
+  }
+
+  function speakText(text) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const voices = window.speechSynthesis.getVoices();
+    const voice = pickVoice(voices);
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    if (voice) utterance.voice = voice;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  return { pickVoice, speakText };
+});
+```
+
+(`pickVoice`'s logic and the one-line sanity check from Task 4 are unchanged — `node -e "const T=require('./js/tts.js'); console.log(T.pickVoice([{name:'Google français',lang:'fr-FR'},{name:'x',lang:'en-US'}]).name)"` should still print `Google français`.)
+
+- [ ] **Step 2: Update `js/panel.js`**
+
+Replace the file's contents with:
+
+```js
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.Panel = factory();
+  }
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  function bilingual(text) {
+    const I18n = typeof window !== 'undefined' ? window.I18n : require('./i18n.js');
+    return I18n.renderBilingual(text);
+  }
+
+  function playBtn(text) {
+    return `<button type="button" class="play-btn-sm" data-speak="${text}" title="Play">🔊</button>`;
+  }
+
+  function render(container, letterUnit) {
+    if (!letterUnit) {
+      container.innerHTML = '';
+      return;
+    }
+    const zhuyinLine = letterUnit.zhuyin.hasEquivalent
+      ? `<p><strong>Zhuyin / 注音:</strong> ${letterUnit.zhuyin.symbol}</p>`
+      : `<p><strong>Zhuyin / 注音:</strong> <em>No close equivalent / 沒有接近的音</em></p>`;
+
+    const examplesHtml = letterUnit.examples
+      .map((word) => `<li>${word} ${playBtn(word)}</li>`)
+      .join('');
+
+    const sentenceHtml = letterUnit.exampleSentence
+      ? `<p class="example-sentence">${letterUnit.exampleSentence} ${playBtn(letterUnit.exampleSentence)}</p>`
+      : '';
+
+    container.innerHTML = `
+      <div class="panel">
+        <h2>${letterUnit.grapheme} <span class="ipa">${letterUnit.ipa}</span></h2>
+        <p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterName)}</p>
+        <p class="sound-label">${bilingual(letterUnit.soundLabel)}</p>
+        <ul class="articulation">
+          <li><strong>Tongue / 舌位:</strong> ${bilingual(letterUnit.articulation.tongue)}</li>
+          <li><strong>Lips / 嘴唇:</strong> ${bilingual(letterUnit.articulation.lips)}</li>
+          <li><strong>Airflow / 氣流:</strong> ${bilingual(letterUnit.articulation.airflow)}</li>
+        </ul>
+        ${zhuyinLine}
+        <p class="zhuyin-caveat">${bilingual(letterUnit.zhuyin.caveat)}</p>
+        <p><strong>Examples / 範例:</strong></p>
+        <ul class="examples">${examplesHtml}</ul>
+        ${sentenceHtml}
+        <ul class="sources">
+          ${letterUnit.sources.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.title}</a></li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  function onPlay(container, callback) {
+    container.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-speak]');
+      if (btn) callback(btn.getAttribute('data-speak'));
+    });
+  }
+
+  return { render, onPlay };
+});
+```
+
+Note the removed big "🔊 Play / 播放" button tied to `ttsText` — it's replaced by the small per-item buttons next to the letter name, each example word, and the sentence.
+
+- [ ] **Step 3: Update the keyboard-tab wiring in `index.html`**
+
+Find the final inline `<script>` block (added in Task 9) and replace the keyboard-tab section — the part that reads:
+
+```js
+let currentLetter = null;
+Keyboard.onKeyPress(keyboardContainer, (letterId) => {
+  currentLetter = findLetter(letterId);
+  Panel.render(panelContainer, currentLetter);
+});
+Panel.onPlay(panelContainer, () => {
+  if (currentLetter) Tts.speak(currentLetter);
+});
+```
+
+with:
+
+```js
+Keyboard.onKeyPress(keyboardContainer, (letterId) => {
+  const letter = findLetter(letterId);
+  Panel.render(panelContainer, letter);
+});
+Panel.onPlay(panelContainer, (text) => Tts.speakText(text));
+```
+
+(The `currentLetter` variable is no longer needed for the keyboard tab's panel — `Panel.onPlay`'s callback now receives the exact text to speak directly from the clicked button, so there is nothing left to track. Leave the rest of the script block — the tab-switching logic — unchanged.)
+
+- [ ] **Step 4: Update `js/game-ui.js`'s `showAnswer()`**
+
+Inside `showAnswer()`, find:
+
+```js
+Panel.render(panelContainer, currentLetter);
+Panel.onPlay(panelContainer, () => Tts.speak(currentLetter));
+```
+
+and replace with:
+
+```js
+Panel.render(panelContainer, currentLetter);
+Panel.onPlay(panelContainer, (text) => Tts.speakText(text));
+```
+
+(`currentLetter` is still used elsewhere in `game-ui.js` for the flashcard/rating logic — only this one line changes.)
+
+- [ ] **Step 5: Update `style.css`**
+
+Remove the now-unused big Play button rule:
+
+```css
+.play-btn {
+  margin: 0.5rem 0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid var(--key-border);
+  background: var(--accent-key-bg);
+  cursor: pointer;
+  font-size: 1rem;
+}
+```
+
+and add in its place:
+
+```css
+.play-btn-sm {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.25rem;
+  vertical-align: middle;
+}
+
+.panel .examples {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.25rem 0;
+}
+
+.panel .examples li {
+  margin: 0.15rem 0;
+}
+
+.example-sentence {
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+```
+
+- [ ] **Step 6: Manual check (desktop and mobile width) — use a real browser**
+
+Open `index.html`. Click a base letter (e.g. 'a') and confirm the panel shows a "Letter name" line with its own 🔊 button, a list of 2+ example words each with their own 🔊 button, and an italicized example sentence with its own 🔊 button. Click each of these 🔊 buttons in turn and confirm each speaks the correct, different text (not always the same word) — e.g. open the console and log `speechSynthesis speaking` events, or at minimum confirm no JS errors and that repeated clicks on different buttons don't get "stuck" on the first text clicked. Click an accented letter (e.g. 'é') and confirm its letter-name line reads "e accent aigu" with a working play button, and that it has NO example-sentence line (since accented letters don't get one). Switch to the Game tab, reveal a card, and confirm the same per-item play buttons work there too (reusing `js/panel.js`). Resize to ~375px and confirm the small play buttons remain tappable and nothing overflows.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add js/tts.js js/panel.js js/game-ui.js index.html style.css
+git commit -m "Add per-item audio playback for letter name, examples, and sentences"
+```
