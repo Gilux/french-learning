@@ -30,12 +30,21 @@
   </main>
 
   <script src="js/i18n.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="data/letters.js"></script>
+  <script src="js/keyboard.js"></script>
   <script>
     document.getElementById('app-title').innerHTML = I18n.renderBilingual(
       { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
     );
     document.getElementById('tab-keyboard').innerHTML = I18n.renderBilingual({ en: 'Keyboard', zh: '鍵盤' });
     document.getElementById('tab-game').innerHTML = I18n.renderBilingual({ en: 'Game', zh: '遊戲' });
+
+    const keyboardContainer = document.getElementById('keyboard-container');
+    Keyboard.render(keyboardContainer, window.LETTERS_DATA);
+    Keyboard.onKeyPress(keyboardContainer, (letterId) => {
+      console.log('key pressed:', letterId);
+    });
   </script>
 </body>
 </html>

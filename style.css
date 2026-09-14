@@ -69,3 +69,62 @@ nav.tabs button.active {
     flex-direction: column;
   }
 }
+
+.kb-row {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.key {
+  min-width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 4px;
+  border: 1px solid var(--key-border);
+  background: var(--key-bg);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.key:hover {
+  filter: brightness(0.95);
+}
+
+.key-inert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  color: #b0b0b0;
+  border: 1px dashed var(--key-border);
+  border-radius: 4px;
+}
+
+.kb-row-digits .key {
+  background: var(--accent-key-bg);
+}
+
+.kb-row-extra {
+  margin-top: 0.5rem;
+}
+
+.kb-row-extra .key {
+  background: var(--extra-key-bg);
+}
+
+.kb-extra-note {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  margin: 0.5rem 0 0.25rem;
+}
+
+@media (min-width: 480px) {
+  .key,
+  .key-inert {
+    min-width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1rem;
+  }
+}
