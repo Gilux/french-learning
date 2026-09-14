@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a static, dependency-free web app with an AZERTY keyboard that opens a sourced pronunciation panel per letter (with French audio and a zhuyin comparison), plus a weighted flashcard game mode.
+**Goal:** Build a static, dependency-free web app with an AZERTY keyboard that opens a sourced pronunciation panel per letter (with French audio and a zhuyin comparison), plus a weighted flashcard game mode. This is a short-lived personal tool (days, not months) — precise, functional, and mobile-friendly matters; a maintained automated test suite does not.
 
-**Architecture:** Plain HTML/CSS/JS, no build step, no framework. Pure logic (bilingual text, keyboard layout, game weighting, data validation, TTS voice selection) lives in small dependency-free modules written with a tiny CommonJS/global dual-export pattern, so the exact same files run under Node's built-in test runner (`node --test`) and as classic `<script>` tags in the browser. DOM-rendering code (keyboard, panel, game screen) is thin glue over that logic and is verified manually in a real browser per the spec, since there is no bundler/jsdom in scope.
+**Architecture:** Plain HTML/CSS/JS, no build step, no framework. Pure logic (bilingual text, keyboard layout, game weighting, TTS voice selection) lives in small dependency-free modules written with a tiny CommonJS/global dual-export pattern, so the same file can be `require()`d for a one-line sanity check and loaded as a classic `<script>` tag in the browser. DOM-rendering code (keyboard, panel, game screen) is thin glue over that logic, verified by hand in a real browser (desktop width and mobile width) — no automated UI test suite, per user instruction.
 
-**Tech Stack:** Vanilla JS (classic scripts, no ES modules — avoids the `file://` CORS restriction on `type="module"`), vanilla CSS, Node.js built-in test runner (`node:test`, `node:assert/strict`) for pure-logic unit tests, Web Speech API for audio. Zero npm dependencies, no `package.json` needed.
+**Tech Stack:** Vanilla JS (classic scripts, no ES modules — avoids the `file://` CORS restriction on `type="module"`), vanilla CSS, Web Speech API for audio. Zero npm dependencies, no `package.json`, no test framework.
 
 **Spec:** [docs/superpowers/specs/2026-09-14-french-pronunciation-site-design.md](../specs/2026-09-14-french-pronunciation-site-design.md)
 
@@ -15,10 +15,11 @@
 - No build step, no npm dependencies, no framework (per spec §3).
 - No backend, no paid API, no API keys (per spec §3, §11).
 - UI is English-first with a Traditional Chinese subtitle under every interface string and every pedagogical explanation (per spec §1, §8).
-- Game card weights live only in a JS variable for the current page session — never `localStorage`/`sessionStorage`, discarded on reload (per spec §6, and explicit user follow-up instruction).
+- Game card weights live only in a JS variable for the current page session — never `localStorage`/`sessionStorage`, discarded on reload (per spec §6, and explicit user instruction).
 - Exactly 38 letter units: 26 base + 5 AZERTY-accent + 7 extra-accent (per spec §2). No digraphs/composed sounds.
-- Every letter entry must carry at least one source; the UI must show sources as links (per spec §4, §7).
-- Test tooling is Node's built-in `node --test` only — no test framework dependency.
+- Every letter entry must carry at least one source; the UI must show sources as links (per spec §4, §7). Prioritize actual FLE (Français Langue Étrangère) pedagogical resources over pure academic phonology — this is a teaching tool, precision for a learner matters more than linguistic completeness.
+- Must work correctly on mobile viewport widths, not just desktop (explicit user instruction) — every UI task below includes a mobile check, not just the final responsive pass.
+- No automated test suite (explicit user instruction — this is a short-lived tool). Verification is: a one-line `node -e` sanity check for each pure-logic module (catches typos/syntax errors immediately, costs seconds) plus manual browser verification for anything DOM-related. Do not add `node:test`, a test runner, or a `tests/` directory.
 
 **Note on spec accuracy (fixed here, not a scope change):** the spec's §2/§5 description of "5 accented letters on the digit row" is slightly off for `ù` — on a real AZERTY keyboard, `é è ç à` are on the digit row but `ù` is the last key of the home row (`qsdfghjklm` + `ù`), sharing its key with `%`. Task 2 below places `ù` correctly. This only affects the physical layout mapping, not the data model or scope.
 
@@ -30,46 +31,11 @@
 - Create: `index.html`
 - Create: `style.css`
 - Create: `js/i18n.js`
-- Test: `tests/i18n.test.js`
 
 **Interfaces:**
 - Produces: `I18n.renderBilingual({en, zh}, opts)` → HTML string. `opts` optional: `{ tag: 'span' (default), enClass: 'lang-en' (default), zhClass: 'lang-zh' (default) }`.
 
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/i18n.test.js`:
-
-```js
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { renderBilingual } = require('../js/i18n.js');
-
-test('renders english then chinese span with default classes', () => {
-  const html = renderBilingual({ en: 'Play', zh: '播放' });
-  assert.equal(
-    html,
-    '<span class="lang-en">Play</span><span class="lang-zh">播放</span>'
-  );
-});
-
-test('respects a custom tag and class names', () => {
-  const html = renderBilingual(
-    { en: 'Easy', zh: '簡單' },
-    { tag: 'div', enClass: 'btn-en', zhClass: 'btn-zh' }
-  );
-  assert.equal(
-    html,
-    '<div class="btn-en">Easy</div><div class="btn-zh">簡單</div>'
-  );
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `node --test tests/i18n.test.js`
-Expected: FAIL — `Cannot find module '../js/i18n.js'`
-
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 1: Write the implementation**
 
 Create `js/i18n.js`:
 
@@ -95,12 +61,12 @@ Create `js/i18n.js`:
 });
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: One-line sanity check**
 
-Run: `node --test tests/i18n.test.js`
-Expected: PASS (2 tests)
+Run: `node -e "console.log(require('./js/i18n.js').renderBilingual({en:'Play', zh:'播放'}))"`
+Expected output: `<span class="lang-en">Play</span><span class="lang-zh">播放</span>`
 
-- [ ] **Step 5: Build the static shell**
+- [ ] **Step 3: Build the static shell**
 
 Create `style.css`:
 
@@ -114,6 +80,10 @@ Create `style.css`:
   --text-main: #1a1a1a;
   --text-sub: #6b6b6b;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -211,8 +181,7 @@ Create `index.html`:
   <script src="js/i18n.js"></script>
   <script>
     document.getElementById('app-title').innerHTML = I18n.renderBilingual(
-      { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' },
-      { tag: 'span' }
+      { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
     );
     document.getElementById('tab-keyboard').innerHTML = I18n.renderBilingual({ en: 'Keyboard', zh: '鍵盤' });
     document.getElementById('tab-game').innerHTML = I18n.renderBilingual({ en: 'Game', zh: '遊戲' });
@@ -221,14 +190,14 @@ Create `index.html`:
 </html>
 ```
 
-- [ ] **Step 6: Manual check**
+- [ ] **Step 4: Manual check (desktop and mobile width)**
 
-Open `index.html` directly in a browser (double-click it, `file://` is fine — no ES modules are used). Confirm: the title and two tab buttons render with an English line and a smaller Chinese line underneath, no console errors.
+Open `index.html` directly in a browser (double-click it, `file://` is fine — no ES modules are used). Confirm the title and two tab buttons render with an English line and a smaller Chinese line underneath, no console errors. Resize the browser window down to ~375px wide (or use devtools device toolbar) and confirm nothing overflows or breaks.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add index.html style.css js/i18n.js tests/i18n.test.js
+git add index.html style.css js/i18n.js
 git commit -m "Add static shell and bilingual text helper"
 ```
 
@@ -238,63 +207,12 @@ git commit -m "Add static shell and bilingual text helper"
 
 **Files:**
 - Create: `js/layout.js`
-- Test: `tests/layout.test.js`
 
 **Interfaces:**
 - Consumes: nothing (pure data module).
 - Produces: `Layout.DIGIT_ROW` (array of `{char, letterId}`), `Layout.ROW2`, `Layout.ROW3`, `Layout.ROW4` (arrays of `{char, letterId}`), `Layout.EXTRA_ACCENTS` (array of `{char, letterId}`), `Layout.getAllLetterIds()` → array of all 38 ids in a fixed order, `Layout.CATEGORY_COUNTS` = `{ base: 26, 'azerty-accent': 5, 'extra-accent': 7 }`.
 
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/layout.test.js`:
-
-```js
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const Layout = require('../js/layout.js');
-
-test('digit row carries exactly the 4 accented digit-row letters', () => {
-  const withLetter = Layout.DIGIT_ROW.filter((k) => k.letterId);
-  assert.deepEqual(
-    withLetter.map((k) => k.letterId).sort(),
-    ['a-grave', 'c-cedilla', 'e-acute', 'e-grave'].sort()
-  );
-});
-
-test('row 3 ends with ù (u-grave), not the digit row', () => {
-  const last = Layout.ROW3[Layout.ROW3.length - 1];
-  assert.equal(last.char, 'ù');
-  assert.equal(last.letterId, 'u-grave');
-});
-
-test('extra accents list has exactly the 7 dead-key letters', () => {
-  assert.deepEqual(
-    Layout.EXTRA_ACCENTS.map((k) => k.letterId).sort(),
-    ['a-circumflex', 'e-circumflex', 'e-diaeresis', 'i-circumflex', 'i-diaeresis', 'o-circumflex', 'u-circumflex'].sort()
-  );
-});
-
-test('getAllLetterIds returns exactly 38 unique ids', () => {
-  const ids = Layout.getAllLetterIds();
-  assert.equal(ids.length, 38);
-  assert.equal(new Set(ids).size, 38);
-});
-
-test('base rows contain exactly the 26 base letters', () => {
-  const baseIds = [...Layout.ROW2, ...Layout.ROW3, ...Layout.ROW4]
-    .map((k) => k.letterId)
-    .filter((id) => !['u-grave'].includes(id));
-  assert.equal(baseIds.length, 26);
-  assert.equal(new Set(baseIds).size, 26);
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `node --test tests/layout.test.js`
-Expected: FAIL — `Cannot find module '../js/layout.js'`
-
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 1: Write the implementation**
 
 Create `js/layout.js`:
 
@@ -360,292 +278,33 @@ Create `js/layout.js`:
 });
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: One-line sanity check**
 
-Run: `node --test tests/layout.test.js`
-Expected: PASS (5 tests)
+Run: `node -e "const L=require('./js/layout.js'); const ids=L.getAllLetterIds(); console.log(ids.length, new Set(ids).size)"`
+Expected output: `38 38`
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add js/layout.js tests/layout.test.js
+git add js/layout.js
 git commit -m "Add AZERTY layout data"
 ```
 
 ---
 
-### Task 3: Letter data validation helper
-
-**Files:**
-- Create: `js/validate.js`
-- Test: `tests/validate.test.js`
-
-**Interfaces:**
-- Consumes: nothing (pure function, takes plain data as input).
-- Produces: `Validate.validateLetters(letters)` → `{ valid: boolean, errors: string[] }`. Checks, per entry: `id` (non-empty string, unique across array), `grapheme` (non-empty string), `category` (one of `base`/`azerty-accent`/`extra-accent`), `ipa` (non-empty string), `soundLabel.en`/`soundLabel.zh` (non-empty strings), `articulation.tongue/lips/airflow` each with `.en`/`.zh`, `articulation.voicing` (`voiced`/`voiceless`), `articulation.nasal` (boolean), `zhuyin.hasEquivalent` (boolean); if `true`, `zhuyin.symbol` must be a non-empty string; `zhuyin.caveat.en`/`.zh` (non-empty strings) always required, `examples` (non-empty array of non-empty strings), `ttsText` (non-empty string), `sources` (non-empty array of `{title, url}` where `url` starts with `http`).
-
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/validate.test.js`:
-
-```js
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { validateLetters } = require('../js/validate.js');
-
-function validEntry(overrides) {
-  return Object.assign(
-    {
-      id: 'a',
-      grapheme: 'A',
-      category: 'base',
-      ipa: '/a/',
-      soundLabel: { en: 'open a', zh: '開口a' },
-      articulation: {
-        tongue: { en: 'low, central', zh: '舌位低、居中' },
-        lips: { en: 'neutral', zh: '自然' },
-        airflow: { en: 'continuous, unobstructed', zh: '持續、無阻礙' },
-        voicing: 'voiced',
-        nasal: false,
-      },
-      zhuyin: {
-        hasEquivalent: true,
-        symbol: 'ㄚ',
-        caveat: { en: 'Close match.', zh: '非常接近。' },
-      },
-      examples: ['papa'],
-      ttsText: 'papa',
-      sources: [{ title: 'Example Source', url: 'https://example.com/a' }],
-    },
-    overrides
-  );
-}
-
-test('accepts a fully valid entry', () => {
-  const result = validateLetters([validEntry()]);
-  assert.equal(result.valid, true);
-  assert.deepEqual(result.errors, []);
-});
-
-test('rejects a missing field', () => {
-  const entry = validEntry();
-  delete entry.ipa;
-  const result = validateLetters([entry]);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((e) => e.includes('ipa')));
-});
-
-test('rejects duplicate ids', () => {
-  const result = validateLetters([validEntry(), validEntry()]);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((e) => e.includes('Duplicate id')));
-});
-
-test('rejects an entry with no sources', () => {
-  const entry = validEntry({ sources: [] });
-  const result = validateLetters([entry]);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((e) => e.includes('sources')));
-});
-
-test('rejects zhuyin.hasEquivalent true with no symbol', () => {
-  const entry = validEntry({ zhuyin: { hasEquivalent: true, symbol: '', caveat: { en: 'x', zh: 'x' } } });
-  const result = validateLetters([entry]);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((e) => e.includes('zhuyin.symbol')));
-});
-
-test('accepts zhuyin.hasEquivalent false with no symbol', () => {
-  const entry = validEntry({ zhuyin: { hasEquivalent: false, symbol: null, caveat: { en: 'No close match.', zh: '沒有接近的音。' } } });
-  const result = validateLetters([entry]);
-  assert.equal(result.valid, true);
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `node --test tests/validate.test.js`
-Expected: FAIL — `Cannot find module '../js/validate.js'`
-
-- [ ] **Step 3: Write the implementation**
-
-Create `js/validate.js`:
-
-```js
-(function (root, factory) {
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory();
-  } else {
-    root.Validate = factory();
-  }
-})(typeof window !== 'undefined' ? window : globalThis, function () {
-  const CATEGORIES = ['base', 'azerty-accent', 'extra-accent'];
-
-  function isNonEmptyString(v) {
-    return typeof v === 'string' && v.trim().length > 0;
-  }
-
-  function checkBilingual(obj, path, errors) {
-    if (!obj || !isNonEmptyString(obj.en)) errors.push(`${path}.en missing or empty`);
-    if (!obj || !isNonEmptyString(obj.zh)) errors.push(`${path}.zh missing or empty`);
-  }
-
-  function validateEntry(entry, index, errors, seenIds) {
-    const label = `letters[${index}] (id=${entry && entry.id})`;
-
-    if (!isNonEmptyString(entry.id)) {
-      errors.push(`${label}: id missing or empty`);
-    } else if (seenIds.has(entry.id)) {
-      errors.push(`${label}: Duplicate id "${entry.id}"`);
-    } else {
-      seenIds.add(entry.id);
-    }
-
-    if (!isNonEmptyString(entry.grapheme)) errors.push(`${label}: grapheme missing or empty`);
-    if (!CATEGORIES.includes(entry.category)) errors.push(`${label}: category must be one of ${CATEGORIES.join('/')}`);
-    if (!isNonEmptyString(entry.ipa)) errors.push(`${label}: ipa missing or empty`);
-
-    checkBilingual(entry.soundLabel, `${label}.soundLabel`, errors);
-
-    const art = entry.articulation || {};
-    checkBilingual(art.tongue, `${label}.articulation.tongue`, errors);
-    checkBilingual(art.lips, `${label}.articulation.lips`, errors);
-    checkBilingual(art.airflow, `${label}.articulation.airflow`, errors);
-    if (!['voiced', 'voiceless'].includes(art.voicing)) {
-      errors.push(`${label}: articulation.voicing must be "voiced" or "voiceless"`);
-    }
-    if (typeof art.nasal !== 'boolean') errors.push(`${label}: articulation.nasal must be a boolean`);
-
-    const zh = entry.zhuyin || {};
-    if (typeof zh.hasEquivalent !== 'boolean') {
-      errors.push(`${label}: zhuyin.hasEquivalent must be a boolean`);
-    } else if (zh.hasEquivalent && !isNonEmptyString(zh.symbol)) {
-      errors.push(`${label}: zhuyin.symbol must be set when hasEquivalent is true`);
-    }
-    checkBilingual(zh.caveat, `${label}.zhuyin.caveat`, errors);
-
-    if (!Array.isArray(entry.examples) || entry.examples.length === 0 || !entry.examples.every(isNonEmptyString)) {
-      errors.push(`${label}: examples must be a non-empty array of non-empty strings`);
-    }
-
-    if (!isNonEmptyString(entry.ttsText)) errors.push(`${label}: ttsText missing or empty`);
-
-    if (!Array.isArray(entry.sources) || entry.sources.length === 0) {
-      errors.push(`${label}: sources must be a non-empty array`);
-    } else {
-      entry.sources.forEach((s, i) => {
-        if (!s || !isNonEmptyString(s.title) || !isNonEmptyString(s.url) || !s.url.startsWith('http')) {
-          errors.push(`${label}: sources[${i}] must have a title and an http(s) url`);
-        }
-      });
-    }
-  }
-
-  function validateLetters(letters) {
-    const errors = [];
-    const seenIds = new Set();
-    letters.forEach((entry, index) => validateEntry(entry, index, errors, seenIds));
-    return { valid: errors.length === 0, errors };
-  }
-
-  return { validateLetters };
-});
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `node --test tests/validate.test.js`
-Expected: PASS (6 tests)
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add js/validate.js tests/validate.test.js
-git commit -m "Add letter data validation helper"
-```
-
----
-
-### Task 4: Weighted flashcard game-state logic
+### Task 3: Weighted flashcard game-state logic
 
 **Files:**
 - Create: `js/game.js`
-- Test: `tests/game.test.js`
 
 **Interfaces:**
 - Consumes: nothing (pure, takes a plain array of ids).
 - Produces:
   - `Game.createGameState(letterIds)` → `{ weights: { [id]: 1 }, history: [] }`
-  - `Game.drawNext(state, rng)` → `{ id, state: newState }` (`rng` optional, defaults to `Math.random`; `newState.history` keeps at most the last 5 drawn ids)
-  - `Game.rateCard(state, id, rating)` → `newState` (`rating` is `'easy' | 'hard' | 'missed'`; throws on unknown rating)
+  - `Game.drawNext(state, rng)` → `{ id, state: newState }` (`rng` optional, defaults to `Math.random`; `newState.history` keeps at most the last 5 drawn ids; excludes the last 2 drawn ids from candidates unless that would empty the pool)
+  - `Game.rateCard(state, id, rating)` → `newState` (`rating` is `'easy' | 'hard' | 'missed'`; `easy` subtracts 1 (floor 0.5), `hard` adds 1.5, `missed` adds 3; throws on unknown rating)
 
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/game.test.js`:
-
-```js
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const Game = require('../js/game.js');
-
-test('createGameState gives every id weight 1 and empty history', () => {
-  const state = Game.createGameState(['a', 'b', 'c']);
-  assert.deepEqual(state.weights, { a: 1, b: 1, c: 1 });
-  assert.deepEqual(state.history, []);
-});
-
-test('drawNext picks according to cumulative weight and injected rng', () => {
-  // weights a:1, b:1, c:1 -> cumulative [1,2,3], total 3.
-  // rng() = 0.5 -> threshold 1.5 -> falls in b's bucket (1..2)
-  let state = Game.createGameState(['a', 'b', 'c']);
-  const result = Game.drawNext(state, () => 0.5);
-  assert.equal(result.id, 'b');
-  assert.deepEqual(result.state.history, ['b']);
-});
-
-test('drawNext excludes the most recently drawn id when possible', () => {
-  let state = Game.createGameState(['a', 'b']);
-  state = { ...state, history: ['a'] };
-  // only 'b' should be a candidate regardless of rng value
-  const result = Game.drawNext(state, () => 0.0);
-  assert.equal(result.id, 'b');
-});
-
-test('drawNext does not exclude everything when the pool is too small', () => {
-  let state = Game.createGameState(['a']);
-  state = { ...state, history: ['a'] };
-  const result = Game.drawNext(state, () => 0.0);
-  assert.equal(result.id, 'a');
-});
-
-test('rateCard easy decreases weight with a floor of 0.5', () => {
-  let state = Game.createGameState(['a']);
-  state = Game.rateCard(state, 'a', 'easy');
-  assert.equal(state.weights.a, 0.5);
-  state = Game.rateCard(state, 'a', 'easy');
-  assert.equal(state.weights.a, 0.5);
-});
-
-test('rateCard hard adds 1.5, missed adds 3', () => {
-  let state = Game.createGameState(['a', 'b']);
-  state = Game.rateCard(state, 'a', 'hard');
-  assert.equal(state.weights.a, 2.5);
-  state = Game.rateCard(state, 'b', 'missed');
-  assert.equal(state.weights.b, 4);
-});
-
-test('rateCard throws on an unknown rating', () => {
-  const state = Game.createGameState(['a']);
-  assert.throws(() => Game.rateCard(state, 'a', 'bogus'));
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `node --test tests/game.test.js`
-Expected: FAIL — `Cannot find module '../js/game.js'`
-
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 1: Write the implementation**
 
 Create `js/game.js`:
 
@@ -706,73 +365,43 @@ Create `js/game.js`:
 });
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: One-line sanity check**
 
-Run: `node --test tests/game.test.js`
-Expected: PASS (7 tests)
-
-- [ ] **Step 5: Commit**
+Run:
 
 ```bash
-git add js/game.js tests/game.test.js
+node -e "
+const G = require('./js/game.js');
+let s = G.createGameState(['a', 'b', 'c']);
+const r = G.drawNext(s);
+console.log('drew:', r.id, 'history:', r.state.history);
+s = G.rateCard(r.state, r.id, 'missed');
+console.log('weight after missed:', s.weights[r.id]);
+"
+```
+
+Expected: prints a drawn id from `a/b/c` with a matching one-item history array, then a weight of `4` for that id (1 + 3).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add js/game.js
 git commit -m "Add weighted flashcard game-state logic"
 ```
 
 ---
 
-### Task 5: TTS voice-selection logic
+### Task 4: TTS voice-selection logic
 
 **Files:**
 - Create: `js/tts.js`
-- Test: `tests/tts.test.js`
 
 **Interfaces:**
 - Produces:
   - `Tts.pickVoice(voices)` → best `voice` object from a list of `{name, lang}`-shaped objects, or `null` if the list is empty. Preference order: (1) `lang` starts with `fr` (case-insensitive) AND `name` contains `google` (case-insensitive); (2) any `lang` starting with `fr`; (3) the first voice in the list; (4) `null` for an empty list.
-  - `Tts.speak(letterUnit)` — browser-only wrapper (not unit tested; see manual test in Task 9), reads `window.speechSynthesis.getVoices()`, calls `pickVoice`, builds a `SpeechSynthesisUtterance` for `letterUnit.ttsText` with `lang = 'fr-FR'` and the picked voice, and calls `window.speechSynthesis.speak(utterance)`.
+  - `Tts.speak(letterUnit)` — browser-only wrapper (verified manually in Task 8), reads `window.speechSynthesis.getVoices()`, calls `pickVoice`, builds a `SpeechSynthesisUtterance` for `letterUnit.ttsText` with `lang = 'fr-FR'` and the picked voice, and calls `window.speechSynthesis.speak(utterance)`.
 
-- [ ] **Step 1: Write the failing test**
-
-Create `tests/tts.test.js`:
-
-```js
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { pickVoice } = require('../js/tts.js');
-
-test('prefers a Google French voice when present', () => {
-  const voices = [
-    { name: 'Microsoft Julie', lang: 'fr-FR' },
-    { name: 'Google français', lang: 'fr-FR' },
-    { name: 'Google US English', lang: 'en-US' },
-  ];
-  assert.equal(pickVoice(voices).name, 'Google français');
-});
-
-test('falls back to any french voice when no Google voice is present', () => {
-  const voices = [
-    { name: 'Amelie', lang: 'en-US' },
-    { name: 'Thomas', lang: 'fr-CA' },
-  ];
-  assert.equal(pickVoice(voices).name, 'Thomas');
-});
-
-test('falls back to the first voice when no french voice is present', () => {
-  const voices = [{ name: 'Amelie', lang: 'en-US' }, { name: 'Kenji', lang: 'ja-JP' }];
-  assert.equal(pickVoice(voices).name, 'Amelie');
-});
-
-test('returns null for an empty voice list', () => {
-  assert.equal(pickVoice([]), null);
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `node --test tests/tts.test.js`
-Expected: FAIL — `Cannot find module '../js/tts.js'`
-
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 1: Write the implementation**
 
 Create `js/tts.js`:
 
@@ -813,43 +442,43 @@ Create `js/tts.js`:
 });
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: One-line sanity check**
 
-Run: `node --test tests/tts.test.js`
-Expected: PASS (4 tests)
+Run: `node -e "const T=require('./js/tts.js'); console.log(T.pickVoice([{name:'Google français',lang:'fr-FR'},{name:'x',lang:'en-US'}]).name)"`
+Expected output: `Google français`
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add js/tts.js tests/tts.test.js
+git add js/tts.js
 git commit -m "Add TTS voice-selection logic"
 ```
 
 ---
 
-### Task 6: Sourced pronunciation & zhuyin research
+### Task 5: Sourced pronunciation & zhuyin research (FLE resources first)
 
 **Files:**
 - Create: `docs/research/sources.md`
 
 **Interfaces:**
-- Produces: a Markdown reference file with one section per of the 38 letter ids from Task 2 (`Layout.getAllLetterIds()`), each carrying the facts Task 7 will transcribe into `data/letters.js`.
+- Produces: a Markdown reference file with one section per of the 38 letter ids from Task 2 (`Layout.getAllLetterIds()`), each carrying the facts Task 6 will transcribe into `data/letters.js`.
 
-This task is content research, not code. Use web search.
+This task is content research, not code. Use web search. **Priority order for sources: (1) FLE (Français Langue Étrangère) pedagogical resources aimed at learners — these give the clearest, most learner-appropriate articulation descriptions; (2) Taiwanese French-pedagogy material specifically for the zhuyin comparisons; (3) general academic French-phonology references only to fill gaps the FLE resources don't cover in enough articulatory detail (tongue/lips/airflow).** Good FLE-resource starting points: `lepointdufle.net` (phonétique section), `lawlessfrench.com/pronunciation`, `frenchtoday.com`, TV5Monde's "Apprendre le français" pronunciation pages, RFI Savoirs "Le français des relations européennes/phonétique" pages, Université du Maine's interactive FLE phonetics site (`phonetique.free.fr`), Bonjour de France.
 
 - [ ] **Step 1: Research the base vowels**
 
-For ids `a, e, i, o, u, y`: search for established French-phonetics descriptions of each vowel's articulation (tongue height/position, lip rounding, airflow — all French oral vowels are non-nasal, continuous, voiced). Good starting queries: `"French vowels" IPA articulation tongue position site:wikipedia.org`, `French phonology vowel chart articulation`. Record the IPA symbol used for the *letter name* pronunciation (e.g. "u" as a letter is said as /y/), one plain-English articulation description per vowel, and at least one source URL per vowel.
+For ids `a, e, i, o, u, y`: search FLE pronunciation guides first (e.g. `lepointdufle.net voyelles françaises phonétique`, `lawlessfrench.com French vowels pronunciation`), then general phonology sources if needed for articulatory depth. Record the IPA symbol for the *letter name* pronunciation (e.g. "u" as a letter is said as /y/), a plain-English articulation description (tongue height/position, lip rounding, airflow — all French oral vowels here are non-nasal, continuous, voiced), an example word, and at least one source URL per vowel.
 
 - [ ] **Step 2: Research the base consonants**
 
-For ids `b, c, d, f, g, h, j, k, l, m, n, p, q, r, s, t, v, w, x, z`: search for how each letter *name* is pronounced in French (e.g. "h" is silent as a sound but named /aʃ/; "w" is named "double vé"), and the articulation of the consonant sound each letter most commonly represents (place/manner of articulation, voicing, airflow — e.g. "r" is a uvular fricative/approximant, voiced, airflow through a narrow gap at the back of the throat). Useful queries: `French consonant IPA place of articulation`, `how to pronounce the French R uvular`, `French alphabet letter names pronunciation`.
+For ids `b, c, d, f, g, h, j, k, l, m, n, p, q, r, s, t, v, w, x, z`: search FLE resources for how each letter *name* is pronounced (e.g. "h" is silent as a sound but named /aʃ/; "w" is named "double vé") and the articulation of the consonant sound the letter most commonly represents (place/manner, voicing, airflow — e.g. "r" is a uvular fricative/approximant, voiced, airflow through a narrow gap at the back of the throat). Useful queries: `lawlessfrench.com French alphabet pronunciation`, `lepointdufle.net consonnes françaises`, `how to pronounce the French R FLE`.
 
 - [ ] **Step 3: Research the accented letters, prioritizing Taiwanese French-pedagogy sources for zhuyin**
 
-For the 12 accented ids (`e-acute, e-grave, c-cedilla, a-grave, u-grave, a-circumflex, e-circumflex, i-circumflex, o-circumflex, u-circumflex, i-diaeresis, e-diaeresis`): first search specifically for Taiwanese French-teaching material that maps French sounds to zhuyin, e.g. `法文 發音 注音符號 對照`, `法語 母音 注音`, `台灣 法文系 發音教學`, `輔仁大學 法文系 發音`, `淡江大學 法文系 發音教學`, `教育部 法語 發音`. Record the closest zhuyin symbol and its source when you find genuine Taiwanese-pedagogy material.
+For the 12 accented ids (`e-acute, e-grave, c-cedilla, a-grave, u-grave, a-circumflex, e-circumflex, i-circumflex, o-circumflex, u-circumflex, i-diaeresis, e-diaeresis`): first search specifically for Taiwanese French-teaching material that maps French sounds to zhuyin, e.g. `法文 發音 注音符號 對照`, `法語 母音 注音`, `台灣 法文系 發音教學`, `輔仁大學 法文系 發音`, `淡江大學 法文系 發音教學`, `教育部 法語 發音`. Record the closest zhuyin symbol and its source when genuine Taiwanese-pedagogy material is found. For the articulation facts (tongue/lips/airflow), fall back to the same FLE resources as Steps 1-2.
 
-If no such source can be found for a given sound (this is expected for e.g. `ê`/`e-circumflex` if it doesn't phonemically differ from `é`/`e-acute` in many descriptions, or for sounds with no zhuyin analogue at all), do not invent a mapping — you will mark `hasEquivalent: false` for it in Task 7 and cite a general French-phonetics source instead for the articulation facts.
+If no zhuyin source can be found for a given sound, do not invent a mapping — mark `hasEquivalent: false` in Task 6 and cite a general French-phonetics or FLE source instead for the articulation facts.
 
 - [ ] **Step 4: Compile `docs/research/sources.md`**
 
@@ -883,19 +512,44 @@ git commit -m "Add sourced pronunciation and zhuyin research"
 
 ---
 
-### Task 7: Author the letter data file
+### Task 6: Author the letter data file
 
 **Files:**
 - Create: `data/letters.js`
 - Create: `scripts/check-data.js`
 
 **Interfaces:**
-- Consumes: `Validate.validateLetters` (Task 3), `Layout.getAllLetterIds`/`Layout.CATEGORY_COUNTS` (Task 2), `docs/research/sources.md` (Task 6).
-- Produces: `data/letters.js` exporting (via the same Node/browser dual pattern as Task 1, but for a plain array) an array of 38 objects matching the shape validated in Task 3. Attaches to `module.exports` under Node and `window.LETTERS_DATA` in the browser.
+- Consumes: `Layout.getAllLetterIds`/`Layout.CATEGORY_COUNTS` (Task 2), `docs/research/sources.md` (Task 5).
+- Produces: `data/letters.js` exporting an array of 38 objects. Attaches to `module.exports` under Node and `window.LETTERS_DATA` in the browser. Each object has this shape:
+
+```
+{
+  id: string,                      // matches an id from Layout.getAllLetterIds()
+  grapheme: string,                // e.g. "É"
+  category: 'base' | 'azerty-accent' | 'extra-accent',
+  ipa: string,                     // e.g. "/e/"
+  soundLabel: { en: string, zh: string },
+  articulation: {
+    tongue: { en: string, zh: string },
+    lips: { en: string, zh: string },
+    airflow: { en: string, zh: string },
+    voicing: 'voiced' | 'voiceless',
+    nasal: boolean,
+  },
+  zhuyin: {
+    hasEquivalent: boolean,
+    symbol: string | null,         // required non-empty when hasEquivalent is true
+    caveat: { en: string, zh: string },
+  },
+  examples: string[],              // at least one French example word
+  ttsText: string,                 // text passed to speechSynthesis, e.g. an example word
+  sources: [{ title: string, url: string }],  // at least one, url starts with "http"
+}
+```
 
 - [ ] **Step 1: Write `data/letters.js`**
 
-Using `docs/research/sources.md`, write all 38 entries matching the schema from Task 3's tests. Write concise, plain-language `en` text and a natural (not machine-translated-sounding) Traditional Chinese `zh` subtitle for every bilingual field. Example shape for one entry (repeat for all 38, each grounded in its own research section):
+Using `docs/research/sources.md`, write all 38 entries matching the schema above. Write concise, plain-language `en` text and a natural (not machine-translated-sounding) Traditional Chinese `zh` subtitle for every bilingual field. Example shape for one entry (repeat for all 38, each grounded in its own research section):
 
 ```js
 const LETTERS = [
@@ -920,7 +574,7 @@ const LETTERS = [
     examples: ['papa', 'chat'],
     ttsText: 'papa',
     sources: [
-      { title: 'French phonology — Wikipedia', url: 'https://en.wikipedia.org/wiki/French_phonology' },
+      { title: 'Le Point du FLE — Phonétique', url: 'https://www.lepointdufle.net/phonetique.htm' },
     ],
   },
   // ... 37 more entries, one per id from js/layout.js's getAllLetterIds()
@@ -933,46 +587,52 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 ```
 
-- [ ] **Step 2: Write the data-check script**
+- [ ] **Step 2: Write the data sanity-check script**
 
-Create `scripts/check-data.js`:
+Create `scripts/check-data.js` (a quick guard against a missing field or duplicate id across 38 hand-written entries — not a test suite):
 
 ```js
-const { validateLetters } = require('../js/validate.js');
 const { CATEGORY_COUNTS, getAllLetterIds } = require('../js/layout.js');
 const letters = require('../data/letters.js');
 
-function checkCounts(letters) {
-  const errors = [];
-  const expectedIds = new Set(getAllLetterIds());
-  const actualIds = new Set(letters.map((l) => l.id));
+const REQUIRED_FIELDS = ['id', 'grapheme', 'category', 'ipa', 'soundLabel', 'articulation', 'zhuyin', 'examples', 'ttsText', 'sources'];
 
-  if (letters.length !== expectedIds.size) {
-    errors.push(`Expected ${expectedIds.size} letters, found ${letters.length}`);
-  }
-  for (const id of expectedIds) {
-    if (!actualIds.has(id)) errors.push(`Missing letter id from layout: ${id}`);
-  }
+const errors = [];
+const seenIds = new Set();
 
-  const counts = {};
-  letters.forEach((l) => {
-    counts[l.category] = (counts[l.category] || 0) + 1;
+letters.forEach((entry, index) => {
+  const label = `letters[${index}] (id=${entry && entry.id})`;
+  REQUIRED_FIELDS.forEach((field) => {
+    if (entry[field] === undefined || entry[field] === null) errors.push(`${label}: missing ${field}`);
   });
-  for (const [category, expected] of Object.entries(CATEGORY_COUNTS)) {
-    if (counts[category] !== expected) {
-      errors.push(`Expected ${expected} letters in category "${category}", found ${counts[category] || 0}`);
-    }
+  if (!Array.isArray(entry.sources) || entry.sources.length === 0) {
+    errors.push(`${label}: needs at least one source`);
   }
-  return errors;
+  if (entry.zhuyin && entry.zhuyin.hasEquivalent && !entry.zhuyin.symbol) {
+    errors.push(`${label}: zhuyin.hasEquivalent is true but symbol is empty`);
+  }
+  if (seenIds.has(entry.id)) errors.push(`Duplicate id: ${entry.id}`);
+  seenIds.add(entry.id);
+});
+
+const expectedIds = new Set(getAllLetterIds());
+for (const id of expectedIds) {
+  if (!seenIds.has(id)) errors.push(`Missing letter id from layout: ${id}`);
 }
 
-const { errors: fieldErrors } = validateLetters(letters);
-const countErrors = checkCounts(letters);
-const allErrors = [...fieldErrors, ...countErrors];
+const counts = {};
+letters.forEach((l) => {
+  counts[l.category] = (counts[l.category] || 0) + 1;
+});
+for (const [category, expected] of Object.entries(CATEGORY_COUNTS)) {
+  if (counts[category] !== expected) {
+    errors.push(`Expected ${expected} letters in category "${category}", found ${counts[category] || 0}`);
+  }
+}
 
-if (allErrors.length > 0) {
-  console.error(`FAILED: ${allErrors.length} error(s)`);
-  allErrors.forEach((e) => console.error(' -', e));
+if (errors.length > 0) {
+  console.error(`FAILED: ${errors.length} error(s)`);
+  errors.forEach((e) => console.error(' -', e));
   process.exit(1);
 } else {
   console.log(`OK: ${letters.length} letters, 0 errors`);
@@ -988,20 +648,21 @@ Expected: `OK: 38 letters, 0 errors` — fix any reported error in `data/letters
 
 ```bash
 git add data/letters.js scripts/check-data.js
-git commit -m "Author sourced letter data and add data integrity check"
+git commit -m "Author sourced letter data and add a data sanity check"
 ```
 
 ---
 
-### Task 8: Keyboard rendering
+### Task 7: Keyboard rendering
 
 **Files:**
 - Create: `js/keyboard.js`
 - Modify: `index.html` (add script tags and container wiring)
+- Modify: `style.css` (keyboard styling)
 
 **Interfaces:**
-- Consumes: `Layout` (Task 2), `data/letters.js` → `window.LETTERS_DATA` (Task 7).
-- Produces: `Keyboard.render(container, letters)` — sets `container.innerHTML` to the full keyboard markup (digit row, rows 2-4, extra-accents strip), each interactive key carrying `data-letter-id="<id>"`; inert digit-row keys (no `letterId`) get no `data-letter-id` and a `disabled`-looking class. `Keyboard.onKeyPress(container, callback)` — attaches one delegated `click` listener on `container` that calls `callback(letterId)` when a key with a `data-letter-id` is clicked.
+- Consumes: `Layout` (Task 2), `data/letters.js` → `window.LETTERS_DATA` (Task 6).
+- Produces: `Keyboard.render(container, letters)` — sets `container.innerHTML` to the full keyboard markup (digit row, rows 2-4, extra-accents strip), each interactive key carrying `data-letter-id="<id>"`; inert digit-row keys (no `letterId`) get no `data-letter-id`. `Keyboard.onKeyPress(container, callback)` — attaches one delegated `click` listener on `container` that calls `callback(letterId)` when a key with a `data-letter-id` is clicked.
 
 - [ ] **Step 1: Write the implementation**
 
@@ -1058,7 +719,7 @@ Create `js/keyboard.js`:
 
 - [ ] **Step 2: Wire it into `index.html`**
 
-Add before the closing `</body>` in `index.html` (after the existing `js/i18n.js` script tag), replacing the previous inline `<script>` block:
+Add before the closing `</body>` in `index.html`, after the existing `js/i18n.js` script tag, replacing the previous inline `<script>` block:
 
 ```html
   <script src="js/i18n.js"></script>
@@ -1080,23 +741,24 @@ Add before the closing `</body>` in `index.html` (after the existing `js/i18n.js
   </script>
 ```
 
-Add matching CSS to `style.css`:
+Add matching CSS to `style.css` (mobile-first sizing so small screens fit without horizontal scroll):
 
 ```css
 .kb-row {
   display: flex;
-  gap: 4px;
-  margin-bottom: 4px;
+  gap: 3px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
 }
 
 .key {
-  min-width: 2.2rem;
-  height: 2.2rem;
+  min-width: 1.8rem;
+  height: 1.8rem;
   border-radius: 4px;
   border: 1px solid var(--key-border);
   background: var(--key-bg);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .key:hover {
@@ -1107,8 +769,8 @@ Add matching CSS to `style.css`:
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.2rem;
-  height: 2.2rem;
+  min-width: 1.8rem;
+  height: 1.8rem;
   color: #b0b0b0;
   border: 1px dashed var(--key-border);
   border-radius: 4px;
@@ -1127,15 +789,24 @@ Add matching CSS to `style.css`:
 }
 
 .kb-extra-note {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-sub);
   margin: 0.5rem 0 0.25rem;
 }
+
+@media (min-width: 480px) {
+  .key,
+  .key-inert {
+    min-width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1rem;
+  }
+}
 ```
 
-- [ ] **Step 3: Manual check**
+- [ ] **Step 3: Manual check (desktop and mobile width)**
 
-Open `index.html` in a browser. Confirm: the digit row shows `& é " ' ( - è _ ç à ) =` with `é è ç à` clickable and the rest visually inert; row 2/3/4 show the 26 letters in AZERTY order with `ù` at the end of row 3; the extra-accents strip shows `â ê î ô û ï ë` below a bilingual note. Open the browser console, click several keys (including `é`, `ù`, and an extra-accent key), and confirm each logs its correct id (e.g. `e-acute`, `u-grave`).
+Open `index.html` in a browser. Confirm the digit row shows `& é " ' ( - è _ ç à ) =` with `é è ç à` clickable and the rest visually inert; row 2/3/4 show the 26 letters in AZERTY order with `ù` at the end of row 3; the extra-accents strip shows `â ê î ô û ï ë` below a bilingual note. Open the browser console, click several keys (including `é`, `ù`, and an extra-accent key), and confirm each logs its correct id (e.g. `e-acute`, `u-grave`). Then resize to ~375px wide (or use devtools device toolbar) and confirm every key is still tappable and nothing overflows the screen width.
 
 - [ ] **Step 4: Commit**
 
@@ -1146,14 +817,15 @@ git commit -m "Render the AZERTY keyboard"
 
 ---
 
-### Task 9: Info panel + audio wiring
+### Task 8: Info panel + audio wiring
 
 **Files:**
 - Create: `js/panel.js`
 - Modify: `index.html`
+- Modify: `style.css`
 
 **Interfaces:**
-- Consumes: `Tts.speak` (Task 5), letter unit objects (Task 7 shape).
+- Consumes: `Tts.speak` (Task 4), letter unit objects (Task 6 shape).
 - Produces: `Panel.render(container, letterUnit)` — sets `container.innerHTML` to the panel markup for one letter unit (grapheme, IPA, sound label, articulation, zhuyin + caveat, examples, a `<button data-action="play">` play button, and a list of source links). `Panel.onPlay(container, callback)` — delegated click listener calling `callback()` when the play button is clicked.
 
 - [ ] **Step 1: Write the implementation**
@@ -1249,11 +921,11 @@ In `index.html`, add `js/tts.js` and `js/panel.js` script tags after `js/keyboar
   </script>
 ```
 
-Add panel styling to `style.css`:
+Add panel styling to `style.css` (mobile-first: full width by default, capped on wider screens):
 
 ```css
 .panel {
-  max-width: 360px;
+  width: 100%;
   background: var(--panel-bg);
   border: 1px solid var(--key-border);
   border-radius: 8px;
@@ -1271,22 +943,29 @@ Add panel styling to `style.css`:
 
 .play-btn {
   margin: 0.5rem 0;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 6px;
   border: 1px solid var(--key-border);
   background: var(--accent-key-bg);
   cursor: pointer;
+  font-size: 1rem;
 }
 
 .panel .sources {
   font-size: 0.8rem;
   padding-left: 1.2rem;
 }
+
+@media (min-width: 720px) {
+  .panel {
+    max-width: 360px;
+  }
+}
 ```
 
-- [ ] **Step 3: Manual check (use a Chromium-based browser for the "Google" voice)**
+- [ ] **Step 3: Manual check (desktop and mobile width, use a Chromium-based browser for the "Google" voice)**
 
-Open `index.html`. Click several keys across all three key categories (a base letter, `é`, and an extra accent like `ê`). Confirm the panel shows the grapheme, IPA, bilingual sound label, tongue/lips/airflow lines, the zhuyin line (including at least one letter that correctly shows "No close equivalent" if your research found one), example words, and clickable source links that open the right pages. Click "🔊 Play" and confirm you hear the example word spoken in French. Open the browser console and run `speechSynthesis.getVoices().map(v => v.name)` to confirm whether a "Google" voice was available and, if so, that it was the one used (no error either way if it falls back).
+Open `index.html`. Click several keys across all three key categories (a base letter, `é`, and an extra accent like `ê`). Confirm the panel shows the grapheme, IPA, bilingual sound label, tongue/lips/airflow lines, the zhuyin line (including at least one letter that correctly shows "No close equivalent" if your research found one), example words, and clickable source links that open the right pages. Click "🔊 Play" and confirm you hear the example word spoken in French. Open the browser console and run `speechSynthesis.getVoices().map(v => v.name)` to confirm whether a "Google" voice was available and, if so, that it was the one used (no error either way if it falls back). Repeat the key-click + play check at a ~375px width to confirm the panel and play button are still usable with a thumb.
 
 - [ ] **Step 4: Commit**
 
@@ -1297,14 +976,15 @@ git commit -m "Add info panel with sourced content and audio playback"
 
 ---
 
-### Task 10: Game mode UI
+### Task 9: Game mode UI
 
 **Files:**
 - Create: `js/game-ui.js`
 - Modify: `index.html`
+- Modify: `style.css`
 
 **Interfaces:**
-- Consumes: `Game.createGameState`/`drawNext`/`rateCard` (Task 4), `Panel.render`/`onPlay` (Task 9), `Tts.speak` (Task 5).
+- Consumes: `Game.createGameState`/`drawNext`/`rateCard` (Task 3), `Panel.render`/`onPlay` (Task 8), `Tts.speak` (Task 4).
 - Produces: `GameUI.init(rootEl, letters)` — renders the flashcard screen into `rootEl` (big grapheme, a "Reveal" button, and after reveal, the full panel plus Easy/Hard/Missed buttons and a session counter), and manages its own `Game` state internally, redrawing a new card after each rating.
 
 - [ ] **Step 1: Write the implementation**
@@ -1452,7 +1132,7 @@ In `index.html`, add `js/game.js` and `js/game-ui.js` script tags (after `js/tts
   </script>
 ```
 
-Add game styling to `style.css`:
+Add game styling to `style.css` (mobile-first flashcard sizing):
 
 ```css
 .game-screen {
@@ -1462,10 +1142,10 @@ Add game styling to `style.css`:
 }
 
 .flashcard {
-  font-size: 6rem;
+  font-size: 4rem;
   border: 2px solid var(--key-border);
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1.5rem;
   margin: 1rem 0;
   background: var(--panel-bg);
 }
@@ -1484,24 +1164,33 @@ Add game styling to `style.css`:
   gap: 0.5rem;
   justify-content: center;
   margin-top: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .rating-buttons button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
   border-radius: 6px;
   border: 1px solid var(--key-border);
   cursor: pointer;
+  font-size: 0.95rem;
 }
 
 .game-counter {
   color: var(--text-sub);
   font-size: 0.9rem;
 }
+
+@media (min-width: 480px) {
+  .flashcard {
+    font-size: 6rem;
+    padding: 2rem;
+  }
+}
 ```
 
-- [ ] **Step 3: Manual check**
+- [ ] **Step 3: Manual check (desktop and mobile width)**
 
-Open `index.html`, click the "Game" tab, and confirm a random letter card appears. Click "Reveal", confirm the full info panel (with working Play button) plus three rating buttons appear. Click through all three ratings across several draws and confirm: the counter increments, the easy streak resets on non-easy ratings, the same card never appears twice in a row, and clicking "Keyboard" then back to "Game" keeps the game running (state isn't reset by tab switching — only by a full page reload).
+Open `index.html`, click the "Game" tab, and confirm a random letter card appears. Click "Reveal", confirm the full info panel (with working Play button) plus three rating buttons appear. Click through all three ratings across several draws and confirm: the counter increments, the easy streak resets on non-easy ratings, the same card never appears twice in a row, and clicking "Keyboard" then back to "Game" keeps the game running (state isn't reset by tab switching — only by a full page reload). Repeat at ~375px width and confirm the flashcard, reveal button, and all three rating buttons are comfortably tappable without horizontal scrolling.
 
 - [ ] **Step 4: Commit**
 
@@ -1512,55 +1201,51 @@ git commit -m "Add weighted flashcard game mode UI"
 
 ---
 
-### Task 11: Responsive pass and final verification
+### Task 10: Final mobile/responsive pass and full walkthrough
 
 **Files:**
 - Modify: `style.css`
 
 **Interfaces:** none (styling + manual verification only).
 
-- [ ] **Step 1: Add a narrow-viewport layout**
+- [ ] **Step 1: Tighten narrow-viewport styling**
 
-Extend the existing `@media (max-width: 720px)` block in `style.css` (created in Task 1) to also stack the panel below the keyboard and shrink the flashcard font size:
+Review every screen at a ~360-390px width (common phone width) and fix anything cramped or overflowing. In particular, extend `style.css` so long panel text wraps properly and tap targets stay comfortable:
 
 ```css
-@media (max-width: 720px) {
-  .layout {
-    flex-direction: column;
+@media (max-width: 480px) {
+  body {
+    padding: 0.75rem;
   }
 
-  .panel {
-    max-width: 100%;
+  nav.tabs button {
+    flex: 1;
   }
 
-  .flashcard {
-    font-size: 4rem;
-    padding: 1.25rem;
+  .panel h2 {
+    font-size: 1.3rem;
   }
 
-  .key,
-  .key-inert {
-    min-width: 1.8rem;
-    height: 1.8rem;
-    font-size: 0.85rem;
+  .sources a {
+    word-break: break-word;
   }
 }
 ```
 
 - [ ] **Step 2: Full manual verification pass**
 
-In a Chromium-based browser, resize the window to a typical desktop width (e.g. 1280px) and to a narrow/mobile width (e.g. 375px) and confirm the layout adapts per Step 1 at both sizes. Then run through the complete checklist from spec §10:
+In a Chromium-based browser, check both a typical desktop width (e.g. 1280px) and a phone width (e.g. 375px, via devtools device toolbar or an actual phone on the same network hitting a quick `python3 -m http.server` in the project folder). Run through:
 
-- [ ] Every key on the keyboard (26 base + 4 digit-row accents + `ù` + 7 extra accents = 38) opens a panel with correct content.
-- [ ] Audio plays for at least 5 different letters across different categories.
-- [ ] A full game session runs cleanly through at least 10 draws, exercising all three ratings.
-- [ ] EN/ZH subtitles render everywhere text appears (titles, tabs, panel fields, game screen).
-- [ ] `node --test tests/` passes with zero failures.
+- [ ] Every key on the keyboard (26 base + 4 digit-row accents + `ù` + 7 extra accents = 38) opens a panel with correct, precise content and at least one working source link.
+- [ ] Audio plays correctly for at least 5 different letters across different categories, at both widths.
+- [ ] A full game session runs cleanly through at least 10 draws, exercising all three ratings, at both widths.
+- [ ] EN/ZH subtitles render everywhere text appears (title, tabs, panel fields, game screen).
 - [ ] `node scripts/check-data.js` prints `OK: 38 letters, 0 errors`.
+- [ ] No horizontal scrolling or overlapping elements at the phone width, on either tab.
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add style.css
-git commit -m "Add responsive layout pass"
+git commit -m "Final mobile responsive pass"
 ```
