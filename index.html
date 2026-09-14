@@ -35,6 +35,8 @@
   <script src="js/keyboard.js"></script>
   <script src="js/tts.js"></script>
   <script src="js/panel.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/game-ui.js"></script>
   <script>
     document.getElementById('app-title').innerHTML = I18n.renderBilingual(
       { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
@@ -58,6 +60,26 @@
     Panel.onPlay(panelContainer, () => {
       if (currentLetter) Tts.speak(currentLetter);
     });
+
+    const tabKeyboardBtn = document.getElementById('tab-keyboard');
+    const tabGameBtn = document.getElementById('tab-game');
+    const viewKeyboard = document.getElementById('view-keyboard');
+    const viewGame = document.getElementById('view-game');
+    let gameStarted = false;
+
+    function activateTab(name) {
+      tabKeyboardBtn.classList.toggle('active', name === 'keyboard');
+      tabGameBtn.classList.toggle('active', name === 'game');
+      viewKeyboard.classList.toggle('active', name === 'keyboard');
+      viewGame.classList.toggle('active', name === 'game');
+      if (name === 'game' && !gameStarted) {
+        gameStarted = true;
+        GameUI.init(document.getElementById('game-container'), window.LETTERS_DATA);
+      }
+    }
+
+    tabKeyboardBtn.addEventListener('click', () => activateTab('keyboard'));
+    tabGameBtn.addEventListener('click', () => activateTab('game'));
   </script>
 </body>
 </html>

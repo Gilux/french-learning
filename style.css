@@ -166,3 +166,55 @@ nav.tabs button.active {
     max-width: 360px;
   }
 }
+
+.game-screen {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.flashcard {
+  font-size: 4rem;
+  border: 2px solid var(--key-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  background: var(--panel-bg);
+}
+
+.reveal-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--key-border);
+  background: var(--accent-key-bg);
+  cursor: pointer;
+}
+
+.rating-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rating-buttons button {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--key-border);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.game-counter {
+  color: var(--text-sub);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 480px) {
+  .flashcard {
+    font-size: 6rem;
+    padding: 2rem;
+  }
+}
