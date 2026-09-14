@@ -1,26 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>French Letter Pronunciation Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#edf1f9" />
+  <title>法語字母發音練習｜French Letter Pronunciation Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=Noto+Sans:wght@500&display=swap" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1 id="app-title"></h1>
+  <header class="app-header">
+    <div class="brand">
+      <span class="plaque plaque-mark" aria-hidden="true" lang="fr">é</span>
+      <h1 id="app-title"></h1>
+    </div>
+    <nav class="tabs">
+      <button type="button" id="tab-keyboard" class="active" aria-pressed="true"></button>
+      <button type="button" id="tab-game" aria-pressed="false"></button>
+    </nav>
   </header>
-
-  <nav class="tabs">
-    <button id="tab-keyboard" class="active"></button>
-    <button id="tab-game"></button>
-  </nav>
 
   <main>
     <section id="view-keyboard" class="view active">
       <div class="layout">
-        <div id="keyboard-container"></div>
-        <div id="panel-container"></div>
+        <div id="keyboard-container" class="keyboard-dock"></div>
+        <div id="panel-container" class="panel-area">
+          <div class="panel panel-empty">
+            <p class="empty-title">
+              <span class="lang-zh" lang="zh-Hant">點一個字母，看看、聽聽它怎麼唸</span>
+              <span class="lang-en" lang="en">Tap a letter to see and hear how it sounds</span>
+            </p>
+            <p class="empty-hint">
+              <span class="key key-accent key-sample" aria-hidden="true" lang="fr">é</span>
+              <span>
+                <span class="lang-zh" lang="zh-Hant">黃色的鍵是有重音符號的字母</span>
+                <span class="lang-en" lang="en">Yellow keys are letters with accents</span>
+              </span>
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -54,9 +74,11 @@
 
     Keyboard.onKeyPress(keyboardContainer, (letterId) => {
       const letter = findLetter(letterId);
+      Keyboard.setSelected(keyboardContainer, letterId);
       Panel.render(panelContainer, letter);
+      if (panelContainer.getBoundingClientRect().top < 0) panelContainer.scrollIntoView({ block: 'start' });
     });
-    Panel.onPlay(panelContainer, (text) => Tts.speakText(text));
+    Panel.onPlay(panelContainer, (text, opts) => Tts.speakText(text, opts));
 
     const tabKeyboardBtn = document.getElementById('tab-keyboard');
     const tabGameBtn = document.getElementById('tab-game');
@@ -67,6 +89,8 @@
     function activateTab(name) {
       tabKeyboardBtn.classList.toggle('active', name === 'keyboard');
       tabGameBtn.classList.toggle('active', name === 'game');
+      tabKeyboardBtn.setAttribute('aria-pressed', String(name === 'keyboard'));
+      tabGameBtn.setAttribute('aria-pressed', String(name === 'game'));
       viewKeyboard.classList.toggle('active', name === 'keyboard');
       viewGame.classList.toggle('active', name === 'game');
       if (name === 'game' && !gameStarted) {

@@ -9,9 +9,10 @@
     const tag = (opts && opts.tag) || 'span';
     const enClass = (opts && opts.enClass) || 'lang-en';
     const zhClass = (opts && opts.zhClass) || 'lang-zh';
+    // Traditional Chinese is the primary line; English is the subtitle.
     return (
-      `<${tag} class="${enClass}">${text.en}</${tag}>` +
-      `<${tag} class="${zhClass}">${text.zh}</${tag}>`
+      `<${tag} class="${zhClass}" lang="zh-Hant">${text.zh}</${tag}>` +
+      `<${tag} class="${enClass}" lang="en">${text.en}</${tag}>`
     );
   }
 
