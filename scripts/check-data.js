@@ -1,7 +1,7 @@
 const { CATEGORY_COUNTS, getAllLetterIds } = require('../js/layout.js');
 const letters = require('../data/letters.js');
 
-const REQUIRED_FIELDS = ['id', 'grapheme', 'category', 'ipa', 'soundLabel', 'articulation', 'zhuyin', 'examples', 'ttsText', 'sources'];
+const REQUIRED_FIELDS = ['id', 'grapheme', 'category', 'letterName', 'ipa', 'soundLabel', 'articulation', 'zhuyin', 'examples', 'ttsText', 'sources'];
 
 const errors = [];
 const seenIds = new Set();
