@@ -1555,3 +1555,58 @@ Open `index.html`. Click a base letter (e.g. 'a') and confirm the panel shows a 
 git add js/tts.js js/panel.js js/game-ui.js index.html style.css
 git commit -m "Add per-item audio playback for letter name, examples, and sentences"
 ```
+
+---
+
+## Bug fix (user-reported after Task 12): letter-name TTS mispronunciation
+
+The user tested the live site and reported that the letter 'q's spoken letter-name ("ku") sounds wrong — like "kou" (/ku/) instead of the correct French /ky/. `letterName: 'ku'` (Task 11) is linguistically correct as *written* French phonetic spelling (French reading rules: "u" alone is /y/, so "ku" should read /ky/), but it isn't a real French word, and neural TTS models are known to mispronounce out-of-vocabulary short nonsense syllables even when standard spelling rules would predict the correct sound. The same risk applies to every other invented consonant-name spelling (bé, cé, dé, effe, gé, ka, elle, emme, enne, pé, erre, esse, té, vé, zède) — only 'q' has been confirmed bad so far, since that's what the user happened to test first.
+
+**Important limitation, stated plainly for whoever executes this task:** nobody in this pipeline — controller or reviewer — can literally listen to the audio this produces. Verification is limited to confirming the right text is queued to `speechSynthesis` and that the reasoning behind the text choice is sound; actual pronunciation correctness can only be confirmed by a human listening. Say so explicitly in your report rather than claiming the fix "sounds correct."
+
+### Task 13: Use the raw grapheme for base-letter TTS, not the invented spelling
+
+**Files:**
+- Modify: `data/letters.js` (add a `letterNameTts` field to every entry)
+- Modify: `js/panel.js` (letter-name play button speaks `letterNameTts`, not `letterName`)
+
+**Interfaces:**
+- Consumes: nothing new.
+- Produces: every letter unit gains `letterNameTts: string` — for `category: 'base'` entries, this equals `grapheme` (e.g. `'Q'`, `'B'`, `'H'`); for `category: 'azerty-accent'`/`'extra-accent'` entries, this equals the existing `letterName` value unchanged (e.g. `'e accent aigu'`), since those are already built from real French words and aren't suspected of the same failure mode. `letterName` itself is untouched and still used for the visible display text next to the button.
+
+Rationale for using the raw grapheme for base letters: most speech-synthesis engines (including the ones behind the Web Speech API) have dedicated logic for pronouncing an isolated single Latin letter as that letter's name in the utterance's target locale — this is the same mechanism screen readers rely on to "spell" text. Feeding the engine the actual character it already knows how to name, instead of an invented two/three-letter phonetic approximation it has to guess at, sidesteps the out-of-vocabulary mispronunciation risk entirely for the 26 base letters.
+
+- [ ] **Step 1: Add `letterNameTts` to all 38 entries in `data/letters.js`**
+
+For each of the 26 `base` entries, set `letterNameTts` equal to that entry's own `grapheme` value (not a hardcoded re-typed letter — copy the actual field so there's no risk of a typo introducing a mismatch, e.g. for the `q` entry: `letterNameTts: 'Q'` matching its `grapheme: 'Q'`).
+
+For each of the 12 `azerty-accent`/`extra-accent` entries, set `letterNameTts` equal to that entry's own existing `letterName` value (e.g. for `e-acute`: `letterNameTts: 'e accent aigu'`, matching `letterName: 'e accent aigu'`).
+
+Place the new field right after `letterName` in each entry for readability.
+
+- [ ] **Step 2: Update `js/panel.js`'s letter-name button to speak `letterNameTts`**
+
+Find this line (added in Task 12):
+
+```js
+<p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterName)}</p>
+```
+
+Replace with:
+
+```js
+<p class="letter-name">Letter name / 字母名稱: <strong>${letterUnit.letterName}</strong> ${playBtn(letterUnit.letterNameTts)}</p>
+```
+
+(The visible text — `letterUnit.letterName` — is unchanged; only the button's `data-speak` value changes, from `letterUnit.letterName` to `letterUnit.letterNameTts`. Every other line in `panel.js` — examples, sentence, sources, etc. — is untouched.)
+
+- [ ] **Step 3: Verify the wiring (not the audio)**
+
+Run `node scripts/check-data.js` — it does not yet validate `letterNameTts`, so this only confirms nothing else broke; expect `OK: 38 letters, 0 errors`. Then open `index.html` in a real browser, click the 'q' key, and — with `speechSynthesis.speak` instrumented/logged (e.g. monkey-patch it in the console before clicking, or inspect `speechSynthesis.pending`/queued utterances) — click the letter-name 🔊 button and confirm the queued text is now `"Q"` (the raw grapheme), not `"ku"`. Repeat for one accented letter (e.g. 'é') and confirm its letter-name button still queues `"e accent aigu"` (unchanged behavior). You cannot verify the actual pronunciation sounds correct — say so plainly in your report; that confirmation has to come from the user.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add data/letters.js js/panel.js
+git commit -m "Speak the raw grapheme for base-letter names, fixing TTS mispronunciation risk"
+```
