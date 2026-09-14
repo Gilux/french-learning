@@ -354,7 +354,7 @@ const LETTERS = [
       caveat: { en: 'Matches the voiceless /s/ value only — a Taiwanese source groups s with f, v, l, m, n as pronounced the same way as in English; no equivalent is claimed for the voiced z allophone.', zh: '這個對應只適用於不帶聲的/s/；台灣的法語教學來源把s跟f、v、l、m、n歸為一組，說發音方式跟英語一樣，但夾在母音中間變成有聲z時就沒有這個對應了。' },
     },
     examples: ['sel', 'maison'],
-    exampleSentence: "Je rentre à la maison.",
+    exampleSentence: "Je mets du sel.",
     ttsText: 'sel',
     sources: [ABCONLINE, GLOSSIKA],
   },
