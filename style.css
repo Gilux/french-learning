@@ -218,3 +218,21 @@ nav.tabs button.active {
     padding: 2rem;
   }
 }
+
+@media (max-width: 480px) {
+  body {
+    padding: 0.75rem;
+  }
+
+  nav.tabs button {
+    flex: 1;
+  }
+
+  .panel h2 {
+    font-size: 1.3rem;
+  }
+
+  .sources a {
+    word-break: break-word;
+  }
+}
