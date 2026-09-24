@@ -14,35 +14,22 @@
     // The game drills the 26 base letters only; accented letters stay in keyboard mode.
     const gameIds = letters.filter((l) => l.category === 'base').map((l) => l.id);
     let gameState = Game.createGameState(gameIds);
-    let reviewed = 0;
-    let easyStreak = 0;
     let currentId = null;
     let currentLetter = null;
 
     rootEl.innerHTML = `
       <div class="game-screen">
-        <div class="game-stats">
-          <p class="stat"><span class="stat-num" data-stat="reviewed">0</span><span>${I18n.renderBilingual({ en: 'Reviewed', zh: '已複習' })}</span></p>
-          <p class="stat"><span class="stat-num" data-stat="streak">0</span><span>${I18n.renderBilingual({ en: 'Easy streak', zh: '連續簡單' })}</span></p>
-        </div>
         <div class="game-card"></div>
         <div class="game-reveal-area"></div>
       </div>
     `;
 
     const screenEl = rootEl.querySelector('.game-screen');
-    const reviewedEl = rootEl.querySelector('[data-stat="reviewed"]');
-    const streakEl = rootEl.querySelector('[data-stat="streak"]');
     const cardEl = rootEl.querySelector('.game-card');
     const revealAreaEl = rootEl.querySelector('.game-reveal-area');
 
     function findLetter(id) {
       return letters.find((l) => l.id === id);
-    }
-
-    function updateCounter() {
-      reviewedEl.textContent = reviewed;
-      streakEl.textContent = easyStreak;
     }
 
     function drawCard() {
@@ -82,15 +69,11 @@
         if (!btn) return;
         const rating = btn.getAttribute('data-rating');
         gameState = Game.rateCard(gameState, currentId, rating);
-        reviewed += 1;
-        easyStreak = rating === 'easy' ? easyStreak + 1 : 0;
-        updateCounter();
         drawCard();
         if (rootEl.getBoundingClientRect().top < 0) rootEl.scrollIntoView({ block: 'start' });
       });
     }
 
-    updateCounter();
     drawCard();
   }
 

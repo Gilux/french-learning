@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#edf1f9" />
-  <title>法語字母發音練習｜French Letter Pronunciation Trainer</title>
+  <title>法語發音練習｜French Pronunciation Trainer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=Noto+Sans:wght@500&display=swap" />
@@ -12,21 +12,22 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="brand">
-      <span class="plaque plaque-mark" aria-hidden="true" lang="fr">é</span>
-      <h1 id="app-title"></h1>
-    </div>
-    <nav class="tabs">
-      <button type="button" id="tab-keyboard" class="active" aria-pressed="true"></button>
-      <button type="button" id="tab-game" aria-pressed="false"></button>
+    <button type="button" class="section-switch" id="section-switch" aria-haspopup="dialog" aria-expanded="false" aria-controls="section-sheet">
+      <span class="glyph" id="section-glyph" lang="fr" aria-hidden="true"></span>
+      <span class="bar-name" id="section-name"></span>
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9.5l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <nav class="seg-mini" id="mode-switch" aria-label="模式 Mode">
+      <button type="button" data-mode="learn" aria-pressed="false">學習<span class="sr-only" lang="en"> Learn</span></button>
+      <button type="button" data-mode="quiz" aria-pressed="false">測驗<span class="sr-only" lang="en"> Quiz</span></button>
     </nav>
   </header>
 
   <main>
-    <section id="view-keyboard" class="view active">
+    <section class="view" data-view="letters-learn">
       <div class="layout">
-        <div id="keyboard-container" class="keyboard-dock"></div>
-        <div id="panel-container" class="panel-area">
+        <div class="keyboard-dock"></div>
+        <div class="panel-area">
           <div class="panel panel-empty">
             <p class="empty-title">
               <span class="lang-zh" lang="zh-Hant">點一個字母，看看、聽聽它怎麼唸</span>
@@ -43,11 +44,22 @@
         </div>
       </div>
     </section>
-
-    <section id="view-game" class="view">
-      <div id="game-container"></div>
-    </section>
+    <section class="view" data-view="letters-quiz"><div class="game-root"></div></section>
+    <section class="view" data-view="numbers-learn"><div class="num-root"></div></section>
+    <section class="view" data-view="numbers-quiz"><div class="num-root"></div></section>
   </main>
+
+  <div class="sheet-layer" id="section-sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grip" aria-hidden="true"></div>
+      <p class="sheet-title" id="sheet-title">
+        <span class="lang-zh" lang="zh-Hant">法語發音練習</span>
+        <span class="lang-en" lang="en">French Pronunciation Trainer</span>
+      </p>
+      <ul class="sheet-list"></ul>
+    </div>
+  </div>
 
   <script src="js/i18n.js"></script>
   <script src="js/layout.js"></script>
@@ -57,50 +69,10 @@
   <script src="js/panel.js"></script>
   <script src="js/game.js"></script>
   <script src="js/game-ui.js"></script>
-  <script>
-    document.getElementById('app-title').innerHTML = I18n.renderBilingual(
-      { en: 'French Letter Pronunciation Trainer', zh: '法語字母發音練習' }
-    );
-    document.getElementById('tab-keyboard').innerHTML = I18n.renderBilingual({ en: 'Keyboard', zh: '鍵盤' });
-    document.getElementById('tab-game').innerHTML = I18n.renderBilingual({ en: 'Game', zh: '遊戲' });
-
-    const keyboardContainer = document.getElementById('keyboard-container');
-    const panelContainer = document.getElementById('panel-container');
-    Keyboard.render(keyboardContainer, window.LETTERS_DATA);
-
-    function findLetter(id) {
-      return window.LETTERS_DATA.find((l) => l.id === id);
-    }
-
-    Keyboard.onKeyPress(keyboardContainer, (letterId) => {
-      const letter = findLetter(letterId);
-      Keyboard.setSelected(keyboardContainer, letterId);
-      Panel.render(panelContainer, letter);
-      if (panelContainer.getBoundingClientRect().top < 0) panelContainer.scrollIntoView({ block: 'start' });
-    });
-    Panel.onPlay(panelContainer, (text, opts) => Tts.speakText(text, opts));
-
-    const tabKeyboardBtn = document.getElementById('tab-keyboard');
-    const tabGameBtn = document.getElementById('tab-game');
-    const viewKeyboard = document.getElementById('view-keyboard');
-    const viewGame = document.getElementById('view-game');
-    let gameStarted = false;
-
-    function activateTab(name) {
-      tabKeyboardBtn.classList.toggle('active', name === 'keyboard');
-      tabGameBtn.classList.toggle('active', name === 'game');
-      tabKeyboardBtn.setAttribute('aria-pressed', String(name === 'keyboard'));
-      tabGameBtn.setAttribute('aria-pressed', String(name === 'game'));
-      viewKeyboard.classList.toggle('active', name === 'keyboard');
-      viewGame.classList.toggle('active', name === 'game');
-      if (name === 'game' && !gameStarted) {
-        gameStarted = true;
-        GameUI.init(document.getElementById('game-container'), window.LETTERS_DATA);
-      }
-    }
-
-    tabKeyboardBtn.addEventListener('click', () => activateTab('keyboard'));
-    tabGameBtn.addEventListener('click', () => activateTab('game'));
-  </script>
+  <script src="js/numbers.js"></script>
+  <script src="data/number-rules.js"></script>
+  <script src="js/numbers-quiz.js"></script>
+  <script src="js/numbers-ui.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
