@@ -190,12 +190,15 @@
     return s.replace(/\B(?=(\d{3})+(?!\d))/g, NNBSP);
   }
 
-  // Accepts "21080", "21 080", "21.080", "21'080". Returns { status, value }.
+  // Accepts "21080" and thousands grouped by a space, dot or apostrophe ("21 080", "21.080",
+  // "21'080"); full-width digits from a Chinese keyboard count too. Returns { status, value }.
   function parse(input) {
-    const cleaned = String(input == null ? '' : input).replace(/[\s.'’_]/g, '');
-    if (cleaned === '') return { status: 'empty', value: null };
-    if (!/^\d+$/.test(cleaned)) return { status: 'invalid', value: null };
-    const value = Number(cleaned);
+    const text = String(input == null ? '' : input)
+      .replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0))
+      .trim();
+    if (text === '') return { status: 'empty', value: null };
+    if (!/^(\d+|\d{1,3}([\s.'’]\d{3})+)$/.test(text)) return { status: 'invalid', value: null };
+    const value = Number(text.replace(/\D/g, ''));
     if (value > MAX) return { status: 'invalid', value: null };
     return { status: 'ok', value };
   }

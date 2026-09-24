@@ -253,7 +253,11 @@
         setValue(g.NumbersQuiz.draw(MAX, parsed.status === 'ok' ? parsed.value : null));
       }
       const chip = event.target.closest('[data-value]');
-      if (chip) setValue(Number(chip.getAttribute('data-value')));
+      if (chip) {
+        setValue(Number(chip.getAttribute('data-value')));
+        // The chip itself is re-rendered away; keep keyboard users on the input.
+        if (event.detail === 0) input.focus();
+      }
     });
     bindCommon(root);
     update();
@@ -278,7 +282,7 @@
     if (typed === null) return '';
     if (typed === answer.n) {
       return `<div class="verdict verdict-right"><div class="verdict-head"><span class="verdict-badge">${CHECK}</span>` +
-        `<p class="verdict-title">${bi('答對了！', 'Correct!')}</p></div></div>`;
+        `<p class="verdict-title" tabindex="-1">${bi('答對了！', 'Correct!')}</p></div></div>`;
     }
     const mine = g.Numbers.analyze(typed);
     const row = (a, cls, zh, en) =>
@@ -286,7 +290,7 @@
       `<span><span class="compare-w" lang="fr">${a.words}</span><span class="compare-eq">${structureLine(a)}</span></span>` +
       `<span class="compare-tag">${bi(zh, en)}</span></div>`;
     return `<div class="verdict verdict-wrong">
-      <div class="verdict-head"><span class="verdict-badge">${CROSS}</span><p class="verdict-title">${bi(
+      <div class="verdict-head"><span class="verdict-badge">${CROSS}</span><p class="verdict-title" tabindex="-1">${bi(
         `差一點！你寫的是 ${mine.digits}`,
         `Not quite — you typed ${mine.digits}`
       )}</p></div>
@@ -302,7 +306,8 @@
       if (root.getBoundingClientRect().top < 0) root.scrollIntoView({ block: 'start' });
     }
 
-    function ask() {
+    // Every screen is rebuilt, so keyboard / screen-reader focus is put back explicitly.
+    function ask(focusSelector) {
       current = g.NumbersQuiz.draw(g.NumbersQuiz.rangeById(rangeId).max, current);
       root.innerHTML = `<div class="game-screen num-quiz">
         <p class="game-prompt">${bi('聽一聽，寫下你聽到的數字。', 'Listen, then type the number you hear.')}</p>
@@ -319,6 +324,7 @@
       </div>`;
       syncSpeed();
       scrollTop();
+      if (focusSelector) root.querySelector(focusSelector).focus();
     }
 
     function reveal(typed) {
@@ -335,6 +341,7 @@
       </div>`;
       syncSpeed();
       scrollTop();
+      root.querySelector('.verdict-title, .say-number').focus();
     }
 
     function check() {
@@ -356,12 +363,12 @@
       if (event.target.closest('[data-play]')) say(String(current));
       if (event.target.closest('[data-check]')) check();
       if (event.target.closest('[data-reveal]')) reveal(null);
-      if (event.target.closest('[data-next]')) ask();
+      if (event.target.closest('[data-next]')) ask('[data-play]');
     });
     root.addEventListener('change', (event) => {
       if (!event.target.matches('[data-range]')) return;
       rangeId = event.target.value;
-      ask();
+      ask('[data-range]');
     });
     root.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && event.target.matches('.answer-field input')) {

@@ -42,6 +42,8 @@
   const nameEl = document.getElementById('section-name');
   const modeBtns = document.querySelectorAll('#mode-switch [data-mode]');
   const sheet = document.getElementById('section-sheet');
+  // While the sheet is open the page behind it is inert, so Tab stays inside the sheet.
+  const behindSheet = [document.querySelector('.app-header'), document.querySelector('main')];
   const sheetList = sheet.querySelector('.sheet-list');
   const started = new Set();
   const state = { section: 'letters', mode: 'learn' };
@@ -80,12 +82,14 @@
   }
 
   function openSheet() {
+    behindSheet.forEach((el) => (el.inert = true));
     sheet.hidden = false;
     switchBtn.setAttribute('aria-expanded', 'true');
     sheetList.querySelector('.active').focus();
   }
 
   function closeSheet() {
+    behindSheet.forEach((el) => (el.inert = false));
     sheet.hidden = true;
     switchBtn.setAttribute('aria-expanded', 'false');
     switchBtn.focus();

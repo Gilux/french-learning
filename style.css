@@ -1394,12 +1394,12 @@ main {
   font-size: 0.8667em;
 }
 
-/* French inside a Chinese sentence keeps the Latin face (and its short hyphen) */
+/* French inside a Chinese sentence keeps the Latin face (and its short hyphen);
+   long compounds may still wrap at their hyphens on a phone */
 .fr {
   font-family: var(--font-ui);
   font-weight: 600;
   color: var(--plaque-deep);
-  white-space: nowrap;
 }
 
 .ipa-inline {

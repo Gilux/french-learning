@@ -121,7 +121,11 @@ EXPECTED_RULES.forEach(([n, ids]) => {
 });
 
 // Parsing
-const PARSE = [['21 080', 21080], ['21.080', 21080], ["21'080", 21080], ['1000000', 1000000], ['', null], ['12a', null], ['1000001', null]];
+const PARSE = [
+  ['21 080', 21080], ['21.080', 21080], ["21'080", 21080], ['1 000 000', 1000000], ['1000000', 1000000],
+  ['１２３', 123], [' 97 ', 97],
+  ['', null], ['12a', null], ['1000001', null], ['1.5', null], ['2.50', null], ['7 1', null], ['21 08', null],
+];
 PARSE.forEach(([input, value]) => {
   const p = Numbers.parse(input);
   if (p.value !== value) fail(`parse("${input}") = ${p.value}, expected ${value}`);

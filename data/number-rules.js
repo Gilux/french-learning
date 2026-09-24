@@ -160,8 +160,8 @@
       tag: 'sound',
       sources: ['TLFI_CENT', 'OQLF_LIAISONS_INTERDITES', 'OQLF_PRON_HUIT', 'OQLF_PRON_ONZE'],
       text: (c) => ({
-        zh: `${fr(c.words)} 不連音：${ipa(c.ipa)}，不是 ${ipa(c.wrong)}。${fr('un')}、${fr('huit')}、${fr('onze')} 前面都不連音。`,
-        en: `No liaison in ${fr(c.words)}: ${ipa(c.ipa)}, not ${ipa(c.wrong)}. Nothing links into ${fr('un')}, ${fr('huit')} or ${fr('onze')}.`,
+        zh: `${fr(c.words)} 不連音：${ipa(c.ipa)}，不是 ${ipa(c.wrong)}。${fr('cent')} 和 ${fr('quatre-vingt')} 的 ${fr('t')} 在 ${fr('un')}、${fr('huit')}、${fr('onze')} 前面都不發音。`,
+        en: `No liaison in ${fr(c.words)}: ${ipa(c.ipa)}, not ${ipa(c.wrong)}. The ${fr('t')} of ${fr('cent')} and of ${fr('quatre-vingt')} stays silent before ${fr('un')}, ${fr('huit')} and ${fr('onze')}.`,
       }),
     },
     'x-end': {
@@ -184,8 +184,8 @@
       tag: 'sound',
       sources: ['AF_DICT_DIX_HUIT', 'TLFI_HUIT'],
       text: () => ({
-        zh: `${fr('dix-huit')} 的 ${fr('x')} 唸成 ${ipa('z')}，並和 ${fr('huit')} 連起來：${ipa('di.zɥit')}。`,
-        en: `In ${fr('dix-huit')} the ${fr('x')} becomes ${ipa('z')} and links: ${ipa('di.zɥit')}.`,
+        zh: `${fr('dix-huit')} 的 ${fr('x')} 唸成 ${ipa('z')}，並和 ${fr('huit')} 連起來：${ipa('di.z‿ɥit')}。`,
+        en: `In ${fr('dix-huit')} the ${fr('x')} becomes ${ipa('z')} and links: ${ipa('di.z‿ɥit')}.`,
       }),
     },
     'dix-neuf': {
